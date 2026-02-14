@@ -6,7 +6,7 @@ namespace AlertHub.Application.Alerts.Ingestion;
 
 public sealed class AlertDomainMappingService
 {
-    public Task<Result<AlertIngestionResponse>> ExecuteAsync(AlertIngestionRequest request, CancellationToken ct)
+    public Task<Result<DomainAlert>> ExecuteAsync(AlertIngestionRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -103,21 +103,12 @@ public sealed class AlertDomainMappingService
 
             alert.ValidateForPublication();
 
-            var now = DateTimeOffset.UtcNow;
-            var response = new AlertIngestionResponse
-            {
-                Id = Guid.NewGuid(),
-                Identifier = alert.Identifier,
-                Sent = alert.Sent,
-                IngestedAtUtc = now
-            };
-
-            return Task.FromResult(Result<AlertIngestionResponse>.Success(response));
+            return Task.FromResult(Result<DomainAlert>.Success(alert));
         }
         catch (DomainException ex)
         {
             var error = new ResultError(ex.Error.Code, ex.Error.Message);
-            return Task.FromResult(Result<AlertIngestionResponse>.Failure(error));
+            return Task.FromResult(Result<DomainAlert>.Failure(error));
         }
     }
 

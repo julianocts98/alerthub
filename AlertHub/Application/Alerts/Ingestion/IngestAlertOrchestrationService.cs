@@ -7,15 +7,18 @@ public sealed class IngestAlertOrchestrationService
     private readonly IReadOnlyCollection<ICapAlertParser> _parsers;
     private readonly ICapXmlSchemaValidator _xmlSchemaValidator;
     private readonly AlertDomainMappingService _ingestAlertService;
+    private readonly IAlertRepository _alertRepository;
 
     public IngestAlertOrchestrationService(
         IEnumerable<ICapAlertParser> parsers,
         ICapXmlSchemaValidator xmlSchemaValidator,
-        AlertDomainMappingService ingestAlertService)
+        AlertDomainMappingService ingestAlertService,
+        IAlertRepository alertRepository)
     {
         _parsers = parsers.ToArray();
         _xmlSchemaValidator = xmlSchemaValidator;
         _ingestAlertService = ingestAlertService;
+        _alertRepository = alertRepository;
     }
 
     public async Task<Result<AlertIngestionResponse>> ExecuteAsync(string rawPayload, string contentType, CancellationToken ct)
@@ -44,7 +47,23 @@ public sealed class IngestAlertOrchestrationService
                 parseResult.Error ?? new ResultError(IngestionErrorCodes.InvalidPayload, "Payload could not be parsed."));
         }
 
-        return await _ingestAlertService.ExecuteAsync(parseResult.Value, ct);
+        var domainResult = await _ingestAlertService.ExecuteAsync(parseResult.Value, ct);
+        if (!domainResult.IsSuccess || domainResult.Value is null)
+        {
+            return Result<AlertIngestionResponse>.Failure(
+                domainResult.Error ?? new ResultError(IngestionErrorCodes.InvalidPayload, "Alert could not be validated."));
+        }
+
+        var persisted = await _alertRepository.AddAsync(domainResult.Value, rawPayload, contentType, ct);
+        var response = new AlertIngestionResponse
+        {
+            Id = persisted.Id,
+            Identifier = domainResult.Value.Identifier,
+            Sent = domainResult.Value.Sent,
+            IngestedAtUtc = persisted.IngestedAtUtc
+        };
+
+        return Result<AlertIngestionResponse>.Success(response);
     }
 
     private static bool IsXml(string contentType)

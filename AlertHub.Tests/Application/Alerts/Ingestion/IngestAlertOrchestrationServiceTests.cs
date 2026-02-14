@@ -7,6 +7,7 @@ namespace AlertHub.Tests.Application.Alerts.Ingestion;
 public class IngestAlertOrchestrationServiceTests
 {
     private readonly AlertDomainMappingService _service = new();
+    private static readonly Guid PersistedId = Guid.Parse("728637a3-c4bd-4a1f-a61f-86de1947de4f");
 
     [Fact]
     public async Task ExecuteAsync_WithUnsupportedContentType_ReturnsFailure()
@@ -69,6 +70,7 @@ public class IngestAlertOrchestrationServiceTests
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
         Assert.Equal("cap-alert-123", result.Value!.Identifier);
+        Assert.Equal(PersistedId, result.Value.Id);
     }
 
     private IngestAlertOrchestrationService BuildService(ICapXmlSchemaValidator validator)
@@ -79,7 +81,7 @@ public class IngestAlertOrchestrationServiceTests
             new XmlCapAlertParser()
         };
 
-        return new IngestAlertOrchestrationService(parsers, validator, _service);
+        return new IngestAlertOrchestrationService(parsers, validator, _service, new InMemoryAlertRepository());
     }
 
     private sealed class PassSchemaValidator : ICapXmlSchemaValidator
@@ -91,5 +93,17 @@ public class IngestAlertOrchestrationServiceTests
     {
         public Result Validate(string rawXml) =>
             Result.Failure(new ResultError(IngestionErrorCodes.XmlSchemaInvalid, "Schema validation failed."));
+    }
+
+    private sealed class InMemoryAlertRepository : IAlertRepository
+    {
+        public Task<AlertPersistenceResult> AddAsync(
+            AlertHub.Domain.Alert.Alert alert,
+            string rawPayload,
+            string contentType,
+            CancellationToken ct)
+        {
+            return Task.FromResult(new AlertPersistenceResult(PersistedId, DateTimeOffset.UtcNow));
+        }
     }
 }
