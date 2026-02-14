@@ -43,7 +43,7 @@ public class AlertArea
         _circles.Add(circle);
     }
 
-    internal void AddGeoCode(string valueName, string value)
+    void AddGeoCode(string valueName, string value)
     {
         _geoCodes.Add(new AlertGeoCode(valueName, value));
     }
