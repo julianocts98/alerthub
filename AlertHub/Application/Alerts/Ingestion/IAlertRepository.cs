@@ -1,3 +1,4 @@
+using AlertHub.Application.Alerts.Query;
 using DomainAlert = AlertHub.Domain.Alert.Alert;
 
 namespace AlertHub.Application.Alerts.Ingestion;
@@ -8,6 +9,10 @@ public interface IAlertRepository
         DomainAlert alert,
         string rawPayload,
         string contentType,
+        CancellationToken ct);
+
+    Task<IReadOnlyList<AlertQueryResult>> SearchAsync(
+        AlertSearchQuery query,
         CancellationToken ct);
 }
 
