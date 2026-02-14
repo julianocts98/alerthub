@@ -19,17 +19,19 @@ public class CircleTests
     }
 
     [Fact]
-    public void Constructor_WithNegativeRadius_ShouldThrowDomainException()
+    public void Constructor_WithNonPositiveRadius_ShouldThrowDomainException()
     {
         var center = new Coordinate(0, 0);
 
         var ex = Assert.Throws<DomainException>(() => new Circle(center, -1));
         Assert.Equal("geometry.circle.invalid", ex.Error.Code);
+
+        ex = Assert.Throws<DomainException>(() => new Circle(center, 0));
+        Assert.Equal("geometry.circle.invalid", ex.Error.Code);
     }
 
     [Theory]
     [InlineData("45.5,-122.6 10.5", 45.5, -122.6, 10.5)]
-    [InlineData("0,0 0", 0, 0, 0)]
     public void Parse_WithValidString_ShouldReturnCircle(string input, double lat, double lon, double radius)
     {
         var result = Circle.Parse(input);
@@ -44,6 +46,7 @@ public class CircleTests
     [InlineData("45.5,-122.6")]
     [InlineData("45.5,-122.6 10.5 5")]
     [InlineData("invalid 10.5")]
+    [InlineData("0,0 0")]
     [InlineData("0,0 abc")]
     public void Parse_WithInvalidString_ShouldThrowDomainException(string input)
     {

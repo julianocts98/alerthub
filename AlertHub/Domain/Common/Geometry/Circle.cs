@@ -9,7 +9,7 @@ public sealed record Circle
 
     public Circle(Coordinate center, double radius)
     {
-        if (radius < 0)
+        if (radius <= 0)
             throw new DomainException(GeometryDomainErrors.CircleInvalid);
 
         Center = center;
