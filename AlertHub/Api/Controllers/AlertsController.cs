@@ -39,8 +39,8 @@ public sealed class AlertsController : ControllerBase
     }
 
     [HttpGet]
-    [ProducesResponseType(typeof(IReadOnlyList<AlertQueryResult>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<AlertQueryResult>>> Search(
+    [ProducesResponseType(typeof(AlertPage), StatusCodes.Status200OK)]
+    public async Task<ActionResult<AlertPage>> Search(
         [FromQuery] string? sender,
         [FromQuery] string? identifier,
         [FromQuery] DateTimeOffset? sentFrom,
@@ -53,7 +53,7 @@ public sealed class AlertsController : ControllerBase
         [FromQuery] string? severity,
         [FromQuery] string? certainty,
         [FromQuery] string? category,
-        [FromQuery] int page = 1,
+        [FromQuery] string? cursor = null,
         [FromQuery] int pageSize = 50,
         CancellationToken ct = default)
     {
@@ -71,11 +71,11 @@ public sealed class AlertsController : ControllerBase
             Severity = severity,
             Certainty = certainty,
             Category = category,
-            Page = page,
+            Cursor = cursor,
             PageSize = pageSize,
         };
 
-        var results = await _alertRepository.SearchAsync(query, ct);
-        return Ok(results);
+        var page = await _alertRepository.SearchAsync(query, ct);
+        return Ok(page);
     }
 }

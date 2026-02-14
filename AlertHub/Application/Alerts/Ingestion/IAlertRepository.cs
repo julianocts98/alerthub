@@ -11,7 +11,7 @@ public interface IAlertRepository
         string contentType,
         CancellationToken ct);
 
-    Task<IReadOnlyList<AlertQueryResult>> SearchAsync(
+    Task<AlertPage> SearchAsync(
         AlertSearchQuery query,
         CancellationToken ct);
 }

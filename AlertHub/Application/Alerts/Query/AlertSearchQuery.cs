@@ -26,7 +26,8 @@ public sealed class AlertSearchQuery
 
     public string? Category { get; init; }
 
-    public int Page { get; init; } = 1;
+    /// <summary>Opaque keyset cursor returned by the previous page. Null for the first page.</summary>
+    public string? Cursor { get; init; }
 
     public int PageSize { get; init; } = 50;
 }

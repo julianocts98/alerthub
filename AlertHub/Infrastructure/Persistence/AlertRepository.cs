@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json;
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Alerts.Query;
 using AlertHub.Domain.Alert;
@@ -54,8 +56,10 @@ public sealed class AlertRepository : IAlertRepository
         return new AlertPersistenceResult(entity.Id, entity.IngestedAtUtc);
     }
 
-    public async Task<IReadOnlyList<AlertQueryResult>> SearchAsync(AlertSearchQuery query, CancellationToken ct)
+    public async Task<AlertPage> SearchAsync(AlertSearchQuery query, CancellationToken ct)
     {
+        var cursor = DecodeCursor(query.Cursor);
+
         var q = _dbContext.Alerts
             .AsNoTracking()
             .Include(a => a.Infos)
@@ -98,13 +102,53 @@ public sealed class AlertRepository : IAlertRepository
         if (!string.IsNullOrWhiteSpace(query.Category) && Enum.TryParse<AlertInfoCategory>(query.Category, out var category))
             q = q.Where(a => a.Infos.Any(i => i.Categories.Any(c => c.Category == category)));
 
-        var alerts = await q
+        // Keyset boundary: exclude everything at or before the last seen (sent, ingested_at_utc) pair.
+        // ORDER BY sent DESC, ingested_at_utc DESC — so "after cursor" means an earlier sent,
+        // or the same sent but ingested earlier.
+        if (cursor is not null)
+        {
+            var (cursorSent, cursorIngestedAt) = cursor.Value;
+            q = q.Where(a =>
+                a.Sent < cursorSent ||
+                (a.Sent == cursorSent && a.IngestedAtUtc < cursorIngestedAt));
+        }
+
+        var items = await q
             .OrderByDescending(a => a.Sent)
-            .Skip((query.Page - 1) * query.PageSize)
+            .ThenByDescending(a => a.IngestedAtUtc)
             .Take(query.PageSize)
             .ToListAsync(ct);
 
-        return alerts.Select(ToQueryResult).ToList();
+        var nextCursor = items.Count == query.PageSize
+            ? EncodeCursor(items[^1].Sent, items[^1].IngestedAtUtc)
+            : null;
+
+        return new AlertPage(items.Select(ToQueryResult).ToList(), nextCursor);
+    }
+
+    private static string EncodeCursor(DateTimeOffset sent, DateTimeOffset ingestedAt)
+    {
+        var json = JsonSerializer.Serialize(new { sent, ingestedAt });
+        return Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+    }
+
+    private static (DateTimeOffset Sent, DateTimeOffset IngestedAt)? DecodeCursor(string? cursor)
+    {
+        if (string.IsNullOrWhiteSpace(cursor))
+            return null;
+
+        try
+        {
+            var json = Encoding.UTF8.GetString(Convert.FromBase64String(cursor));
+            using var doc = JsonDocument.Parse(json);
+            var sent = doc.RootElement.GetProperty("sent").GetDateTimeOffset();
+            var ingestedAt = doc.RootElement.GetProperty("ingestedAt").GetDateTimeOffset();
+            return (sent, ingestedAt);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static AlertQueryResult ToQueryResult(AlertEntity a) => new()
