@@ -20,21 +20,30 @@ public sealed class AlertRepository : IAlertRepository
         CancellationToken ct)
     {
         var now = DateTimeOffset.UtcNow;
-        var entity = new IngestedAlertEntity
+        var id = Guid.NewGuid();
+
+        var entity = new AlertEntity
         {
-            Id = Guid.NewGuid(),
+            Id = id,
             Identifier = alert.Identifier,
             Sender = alert.Sender,
             Sent = alert.Sent,
             Status = alert.Status,
             MessageType = alert.MessageType,
             Scope = alert.Scope,
+            Source = alert.Source,
+            Restriction = alert.Restriction,
+            Note = alert.Note,
+            Addresses = alert.Addresses.Count > 0 ? string.Join(" ", alert.Addresses) : null,
+            Codes = alert.Codes.Count > 0 ? string.Join(" ", alert.Codes) : null,
+            References = alert.References.Count > 0 ? string.Join(" ", alert.References.Select(r => r.ToString())) : null,
+            Incidents = alert.Incidents.Count > 0 ? string.Join(" ", alert.Incidents) : null,
             RawPayload = rawPayload,
             ContentType = contentType,
-            IngestedAtUtc = now
+            IngestedAtUtc = now,
         };
 
-        _dbContext.IngestedAlerts.Add(entity);
+        _dbContext.Alerts.Add(entity);
         await _dbContext.SaveChangesAsync(ct);
 
         return new AlertPersistenceResult(entity.Id, entity.IngestedAtUtc);

@@ -9,7 +9,7 @@ public sealed class AppDbContext : DbContext
     {
     }
 
-    public DbSet<IngestedAlertEntity> IngestedAlerts => Set<IngestedAlertEntity>();
+    public DbSet<AlertEntity> Alerts => Set<AlertEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
