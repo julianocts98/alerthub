@@ -1,105 +1,223 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Xml;
+using System.Xml.Serialization;
 using AlertHub.Domain.Alert;
 
 namespace AlertHub.Application.Alerts.Ingestion;
 
+[XmlType(Namespace = CapNamespace)]
+[XmlRoot("alert", Namespace = "urn:oasis:names:tc:emergency:cap:1.2")]
 public sealed class AlertIngestionRequest
 {
-    [Required]
-    [MaxLength(200)]
-    [RegularExpression(@"^[^ ,<&]+$")]
-    public string Identifier { get; init; } = string.Empty;
+    public const string CapNamespace = "urn:oasis:names:tc:emergency:cap:1.2";
 
     [Required]
     [MaxLength(200)]
     [RegularExpression(@"^[^ ,<&]+$")]
-    public string Sender { get; init; } = string.Empty;
+    [XmlElement("identifier")]
+    public string Identifier { get; set; } = string.Empty;
 
     [Required]
-    public DateTimeOffset Sent { get; init; }
+    [MaxLength(200)]
+    [RegularExpression(@"^[^ ,<&]+$")]
+    [XmlElement("sender")]
+    public string Sender { get; set; } = string.Empty;
+
+    [Required]
+    [XmlElement("sent")]
+    public DateTimeOffset Sent { get; set; }
 
     [Required]
     [EnumDataType(typeof(AlertStatus))]
-    public AlertStatus Status { get; init; }
+    [XmlElement("status")]
+    public AlertStatus Status { get; set; }
 
     [Required]
     [EnumDataType(typeof(AlertMessageType))]
-    public AlertMessageType MessageType { get; init; }
+    [XmlElement("msgType")]
+    public AlertMessageType MessageType { get; set; }
 
     [Required]
     [EnumDataType(typeof(AlertScope))]
-    public AlertScope Scope { get; init; }
+    [XmlElement("scope")]
+    public AlertScope Scope { get; set; }
 
     [MaxLength(500)]
-    public string? Source { get; init; }
+    [XmlElement("source")]
+    public string? Source { get; set; }
 
     [MaxLength(1000)]
-    public string? Restriction { get; init; }
+    [XmlElement("restriction")]
+    public string? Restriction { get; set; }
 
     [MaxLength(4000)]
-    public string? Note { get; init; }
+    [XmlElement("note")]
+    public string? Note { get; set; }
 
-    public List<string> Addresses { get; init; } = [];
+    [XmlElement("addresses")]
+    public string? Addresses { get; set; }
 
-    public List<string> Codes { get; init; } = [];
+    [XmlElement("code")]
+    public List<string> Codes { get; set; } = [];
 
-    public List<string> References { get; init; } = [];
+    [XmlElement("references")]
+    public string? References { get; set; }
 
-    public List<string> Incidents { get; init; } = [];
+    [XmlElement("incidents")]
+    public string? Incidents { get; set; }
 
-    public List<AlertInfoRequest> Infos { get; init; } = [];
+    [XmlElement("info")]
+    public List<AlertInfoRequest> Infos { get; set; } = [];
+
+    [XmlAnyElement]
+    public XmlElement[] Any { get; set; } = [];
+
+    [JsonExtensionData]
+    [XmlIgnore]
+    public Dictionary<string, JsonElement>? ExtensionData { get; set; }
 }
 
+[XmlType(Namespace = AlertIngestionRequest.CapNamespace)]
 public sealed class AlertInfoRequest
 {
+    [XmlElement("language")]
+    [MaxLength(20)]
+    public string? Language { get; set; }
+
+    [XmlElement("category")]
+    [MinLength(1)]
+    public List<AlertInfoCategory> Categories { get; set; } = [];
+
     [Required]
     [MaxLength(300)]
-    public string Event { get; init; } = string.Empty;
+    [XmlElement("event")]
+    public string Event { get; set; } = string.Empty;
+
+    [XmlElement("responseType")]
+    public List<AlertResponseType> ResponseTypes { get; set; } = [];
 
     [Required]
     [EnumDataType(typeof(AlertUrgency))]
-    public AlertUrgency Urgency { get; init; }
+    [XmlElement("urgency")]
+    public AlertUrgency Urgency { get; set; }
 
     [Required]
     [EnumDataType(typeof(AlertSeverity))]
-    public AlertSeverity Severity { get; init; }
+    [XmlElement("severity")]
+    public AlertSeverity Severity { get; set; }
 
     [Required]
     [EnumDataType(typeof(AlertCertainty))]
-    public AlertCertainty Certainty { get; init; }
+    [XmlElement("certainty")]
+    public AlertCertainty Certainty { get; set; }
 
-    [MinLength(1)]
-    public List<AlertInfoCategory> Categories { get; init; } = [];
+    [XmlElement("audience")]
+    [MaxLength(200)]
+    public string? Audience { get; set; }
 
-    public List<string> AreaDescriptions { get; init; } = [];
+    [XmlElement("eventCode")]
+    public List<AlertKeyValueRequest> EventCodes { get; set; } = [];
 
-    [MaxLength(20)]
-    public string? Language { get; init; }
+    [XmlElement("effective")]
+    public DateTimeOffset? Effective { get; set; }
+
+    [XmlElement("onset")]
+    public DateTimeOffset? Onset { get; set; }
+
+    [XmlElement("expires")]
+    public DateTimeOffset? Expires { get; set; }
 
     [MaxLength(200)]
-    public string? Audience { get; init; }
-
-    public DateTimeOffset? Effective { get; init; }
-
-    public DateTimeOffset? Onset { get; init; }
-
-    public DateTimeOffset? Expires { get; init; }
-
-    [MaxLength(200)]
-    public string? SenderName { get; init; }
+    [XmlElement("senderName")]
+    public string? SenderName { get; set; }
 
     [MaxLength(300)]
-    public string? Headline { get; init; }
+    [XmlElement("headline")]
+    public string? Headline { get; set; }
 
     [MaxLength(4000)]
-    public string? Description { get; init; }
+    [XmlElement("description")]
+    public string? Description { get; set; }
 
     [MaxLength(4000)]
-    public string? Instruction { get; init; }
+    [XmlElement("instruction")]
+    public string? Instruction { get; set; }
 
     [MaxLength(500)]
-    public string? Web { get; init; }
+    [XmlElement("web")]
+    public string? Web { get; set; }
 
     [MaxLength(300)]
-    public string? Contact { get; init; }
+    [XmlElement("contact")]
+    public string? Contact { get; set; }
+
+    [XmlElement("parameter")]
+    public List<AlertKeyValueRequest> Parameters { get; set; } = [];
+
+    [XmlElement("resource")]
+    public List<AlertResourceRequest> Resources { get; set; } = [];
+
+    [XmlElement("area")]
+    public List<AlertAreaRequest> Areas { get; set; } = [];
+}
+
+[XmlType(Namespace = AlertIngestionRequest.CapNamespace)]
+public sealed class AlertKeyValueRequest
+{
+    [Required]
+    [XmlElement("valueName")]
+    public string ValueName { get; set; } = string.Empty;
+
+    [Required]
+    [XmlElement("value")]
+    public string Value { get; set; } = string.Empty;
+}
+
+[XmlType(Namespace = AlertIngestionRequest.CapNamespace)]
+public sealed class AlertResourceRequest
+{
+    [Required]
+    [XmlElement("resourceDesc")]
+    public string ResourceDescription { get; set; } = string.Empty;
+
+    [Required]
+    [XmlElement("mimeType")]
+    public string MimeType { get; set; } = string.Empty;
+
+    [XmlElement("size")]
+    public long? Size { get; set; }
+
+    [XmlElement("uri")]
+    public string? Uri { get; set; }
+
+    [XmlElement("derefUri")]
+    public string? DerefUri { get; set; }
+
+    [XmlElement("digest")]
+    public string? Digest { get; set; }
+}
+
+[XmlType(Namespace = AlertIngestionRequest.CapNamespace)]
+public sealed class AlertAreaRequest
+{
+    [Required]
+    [XmlElement("areaDesc")]
+    public string AreaDescription { get; set; } = string.Empty;
+
+    [XmlElement("polygon")]
+    public List<string> Polygons { get; set; } = [];
+
+    [XmlElement("circle")]
+    public List<string> Circles { get; set; } = [];
+
+    [XmlElement("geocode")]
+    public List<AlertKeyValueRequest> GeoCodes { get; set; } = [];
+
+    [XmlElement("altitude")]
+    public double? Altitude { get; set; }
+
+    [XmlElement("ceiling")]
+    public double? Ceiling { get; set; }
 }
