@@ -1,21 +1,25 @@
-using System.Xml.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Common;
 
-namespace AlertHub.Application.Alerts.Ingestion;
+namespace AlertHub.Infrastructure.Alerts.Ingestion;
 
-public sealed class XmlCapAlertParser : ICapAlertParser
+public sealed class JsonCapAlertParser : ICapAlertParser
 {
-    private static readonly XmlSerializer Serializer = new(typeof(AlertIngestionRequest));
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
 
-    public bool CanHandle(string contentType) => Matches(contentType, "application/xml") || Matches(contentType, "text/xml");
+    public bool CanHandle(string contentType) => Matches(contentType, "application/json") || Matches(contentType, "text/json");
 
     public Result<AlertIngestionRequest> Parse(string rawPayload)
     {
         try
         {
-            using var reader = new StringReader(rawPayload);
-            var request = Serializer.Deserialize(reader) as AlertIngestionRequest;
-
+            var request = JsonSerializer.Deserialize<AlertIngestionRequest>(rawPayload, JsonOptions);
             if (request is null)
             {
                 return Result<AlertIngestionRequest>.Failure(
@@ -24,10 +28,10 @@ public sealed class XmlCapAlertParser : ICapAlertParser
 
             return Result<AlertIngestionRequest>.Success(request);
         }
-        catch (InvalidOperationException ex)
+        catch (JsonException ex)
         {
             return Result<AlertIngestionRequest>.Failure(
-                new ResultError(IngestionErrorCodes.InvalidPayload, $"XML payload is invalid: {ex.Message}"));
+                new ResultError(IngestionErrorCodes.InvalidPayload, $"JSON payload is invalid: {ex.Message}"));
         }
     }
 

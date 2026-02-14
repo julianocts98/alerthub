@@ -1,5 +1,6 @@
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Common;
+using AlertHub.Infrastructure.Alerts.Ingestion;
 
 namespace AlertHub.Tests.Application.Alerts.Ingestion;
 
