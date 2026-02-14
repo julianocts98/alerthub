@@ -1,5 +1,8 @@
 using AlertHub.Application.Alerts.Ingestion;
+using AlertHub.Application.Alerts.Query;
+using AlertHub.Domain.Alert;
 using AlertHub.Infrastructure.Persistence.Entities;
+using Microsoft.EntityFrameworkCore;
 using DomainAlert = AlertHub.Domain.Alert.Alert;
 
 namespace AlertHub.Infrastructure.Persistence;
@@ -20,6 +23,7 @@ public sealed class AlertRepository : IAlertRepository
         CancellationToken ct)
     {
         var now = DateTimeOffset.UtcNow;
+
         var id = Guid.NewGuid();
 
         var entity = new AlertEntity
@@ -41,6 +45,7 @@ public sealed class AlertRepository : IAlertRepository
             RawPayload = rawPayload,
             ContentType = contentType,
             IngestedAtUtc = now,
+            Infos = alert.Infos.Select(i => MapInfo(id, i)).ToList(),
         };
 
         _dbContext.Alerts.Add(entity);
@@ -48,4 +53,157 @@ public sealed class AlertRepository : IAlertRepository
 
         return new AlertPersistenceResult(entity.Id, entity.IngestedAtUtc);
     }
+
+    public async Task<IReadOnlyList<AlertQueryResult>> SearchAsync(AlertSearchQuery query, CancellationToken ct)
+    {
+        var q = _dbContext.Alerts
+            .AsNoTracking()
+            .Include(a => a.Infos)
+                .ThenInclude(i => i.Categories)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(query.Sender))
+            q = q.Where(a => a.Sender == query.Sender);
+
+        if (!string.IsNullOrWhiteSpace(query.Identifier))
+            q = q.Where(a => a.Identifier == query.Identifier);
+
+        if (query.SentFrom.HasValue)
+            q = q.Where(a => a.Sent >= query.SentFrom.Value);
+
+        if (query.SentTo.HasValue)
+            q = q.Where(a => a.Sent <= query.SentTo.Value);
+
+        if (!string.IsNullOrWhiteSpace(query.Status) && Enum.TryParse<AlertStatus>(query.Status, out var status))
+            q = q.Where(a => a.Status == status);
+
+        if (!string.IsNullOrWhiteSpace(query.MessageType) && Enum.TryParse<AlertMessageType>(query.MessageType, out var msgType))
+            q = q.Where(a => a.MessageType == msgType);
+
+        if (!string.IsNullOrWhiteSpace(query.Scope) && Enum.TryParse<AlertScope>(query.Scope, out var scope))
+            q = q.Where(a => a.Scope == scope);
+
+        if (!string.IsNullOrWhiteSpace(query.Event))
+            q = q.Where(a => a.Infos.Any(i => i.Event == query.Event));
+
+        if (!string.IsNullOrWhiteSpace(query.Urgency) && Enum.TryParse<AlertUrgency>(query.Urgency, out var urgency))
+            q = q.Where(a => a.Infos.Any(i => i.Urgency == urgency));
+
+        if (!string.IsNullOrWhiteSpace(query.Severity) && Enum.TryParse<AlertSeverity>(query.Severity, out var severity))
+            q = q.Where(a => a.Infos.Any(i => i.Severity == severity));
+
+        if (!string.IsNullOrWhiteSpace(query.Certainty) && Enum.TryParse<AlertCertainty>(query.Certainty, out var certainty))
+            q = q.Where(a => a.Infos.Any(i => i.Certainty == certainty));
+
+        if (!string.IsNullOrWhiteSpace(query.Category) && Enum.TryParse<AlertInfoCategory>(query.Category, out var category))
+            q = q.Where(a => a.Infos.Any(i => i.Categories.Any(c => c.Category == category)));
+
+        var alerts = await q
+            .OrderByDescending(a => a.Sent)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync(ct);
+
+        return alerts.Select(ToQueryResult).ToList();
+    }
+
+    private static AlertQueryResult ToQueryResult(AlertEntity a) => new()
+    {
+        Id = a.Id,
+        Identifier = a.Identifier,
+        Sender = a.Sender,
+        Sent = a.Sent,
+        Status = a.Status.ToString(),
+        MessageType = a.MessageType.ToString(),
+        Scope = a.Scope.ToString(),
+        IngestedAtUtc = a.IngestedAtUtc,
+        Infos = a.Infos.Select(i => new AlertInfoQueryResult
+        {
+            Id = i.Id,
+            Event = i.Event,
+            Urgency = i.Urgency.ToString(),
+            Severity = i.Severity.ToString(),
+            Certainty = i.Certainty.ToString(),
+            Categories = i.Categories.Select(c => c.Category.ToString()).ToList(),
+            Effective = i.Effective,
+            Onset = i.Onset,
+            Expires = i.Expires,
+            Headline = i.Headline,
+        }).ToList(),
+    };
+
+    private static AlertInfoEntity MapInfo(Guid alertId, AlertInfo info)
+    {
+        var infoEntity = new AlertInfoEntity
+        {
+            Id = info.Id,
+            AlertId = alertId,
+            Event = info.Event,
+            Urgency = info.Urgency,
+            Severity = info.Severity,
+            Certainty = info.Certainty,
+            Language = info.Language,
+            Audience = info.Audience,
+            Effective = info.Effective,
+            Onset = info.Onset,
+            Expires = info.Expires,
+            SenderName = info.SenderName,
+            Headline = info.Headline,
+            Description = info.Description,
+            Instruction = info.Instruction,
+            Web = info.Web,
+            Contact = info.Contact,
+            Categories = info.Categories
+                .Select(c => new AlertInfoCategoryEntity { AlertInfoId = info.Id, Category = c })
+                .ToList(),
+            ResponseTypes = info.ResponseTypes
+                .Select(r => new AlertInfoResponseTypeEntity { AlertInfoId = info.Id, ResponseType = r })
+                .ToList(),
+            EventCodes = info.EventCodes
+                .Select(e => new AlertInfoEventCodeEntity { Id = Guid.NewGuid(), AlertInfoId = info.Id, ValueName = e.ValueName, Value = e.Value })
+                .ToList(),
+            Parameters = info.Parameters
+                .Select(p => new AlertInfoParameterEntity { Id = Guid.NewGuid(), AlertInfoId = info.Id, ValueName = p.ValueName, Value = p.Value })
+                .ToList(),
+            Resources = info.Resources
+                .Select(r => new AlertInfoResourceEntity
+                {
+                    Id = Guid.NewGuid(),
+                    AlertInfoId = info.Id,
+                    ResourceDescription = r.ResourceDescription,
+                    MimeType = r.MimeType,
+                    Size = r.Size,
+                    Uri = r.Uri,
+                    Digest = r.Digest,
+                })
+                .ToList(),
+            Areas = info.Areas.Select(MapArea).ToList(),
+        };
+
+        return infoEntity;
+    }
+
+    private static AlertAreaEntity MapArea(AlertArea area) => new()
+    {
+        Id = area.Id,
+        AreaDescription = area.AreaDescription,
+        Altitude = area.Altitude,
+        Ceiling = area.Ceiling,
+        Polygons = area.Polygons
+            .Select(p => new AlertAreaPolygonEntity { Id = Guid.NewGuid(), AlertAreaId = area.Id, Points = p.ToString() })
+            .ToList(),
+        Circles = area.Circles
+            .Select(c => new AlertAreaCircleEntity
+            {
+                Id = Guid.NewGuid(),
+                AlertAreaId = area.Id,
+                CenterLatitude = c.Center.Latitude,
+                CenterLongitude = c.Center.Longitude,
+                Radius = c.Radius,
+            })
+            .ToList(),
+        GeoCodes = area.GeoCodes
+            .Select(g => new AlertAreaGeoCodeEntity { Id = Guid.NewGuid(), AlertAreaId = area.Id, ValueName = g.ValueName, Value = g.Value })
+            .ToList(),
+    };
 }
