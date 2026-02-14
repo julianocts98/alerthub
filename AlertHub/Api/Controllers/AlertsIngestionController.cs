@@ -9,11 +9,11 @@ namespace AlertHub.Api.Controllers;
 [Produces("application/json")]
 public sealed class AlertsIngestionController : ControllerBase
 {
-    private readonly IngestAlertService _service;
+    private readonly IngestAlertOrchestrationService _ingestService;
 
-    public AlertsIngestionController(IngestAlertService service)
+    public AlertsIngestionController(IngestAlertOrchestrationService ingestService)
     {
-        _service = service;
+        _ingestService = ingestService;
     }
 
     [HttpPost("ingest")]
@@ -22,9 +22,13 @@ public sealed class AlertsIngestionController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status415UnsupportedMediaType)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> Ingest([FromBody] AlertIngestionRequest request, CancellationToken ct)
+    public async Task<IActionResult> Ingest(CancellationToken ct)
     {
-        var result = await _service.ExecuteAsync(request, ct);
+        using var reader = new StreamReader(Request.Body);
+        var rawPayload = await reader.ReadToEndAsync(ct);
+
+        var contentType = Request.ContentType ?? string.Empty;
+        var result = await _ingestService.ExecuteAsync(rawPayload, contentType, ct);
         if (!result.IsSuccess || result.Value is null)
             return IngestionProblemDetailsMapper.ToActionResult(result.Error);
 

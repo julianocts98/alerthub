@@ -16,4 +16,10 @@
       <Folder Include="Application\" />   
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="cap1_2.xsd">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

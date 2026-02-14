@@ -15,6 +15,7 @@ public class Result
 
     public static Result Success() => new(true, null);
     public static Result Failure() => new(false, null);
+    public static Result Failure(ResultError error) => new(false, error);
 }
 
 public class Result<T> : Result
@@ -25,5 +26,5 @@ public class Result<T> : Result
     private Result(ResultError error) : base(false, error) { }
 
     public static Result<T> Success(T value) => new(value);
-    public static Result<T> Failure(ResultError error) => new(error);
+    public new static Result<T> Failure(ResultError error) => new(error);
 }
