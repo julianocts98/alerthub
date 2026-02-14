@@ -1,6 +1,7 @@
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Common;
 using AlertHub.Infrastructure.Alerts.Ingestion;
+using Moq;
 
 namespace AlertHub.Tests.Application.Alerts.Ingestion;
 
@@ -81,7 +82,11 @@ public class IngestAlertOrchestrationServiceTests
             new XmlCapAlertParser()
         };
 
-        return new IngestAlertOrchestrationService(parsers, validator, _service, new InMemoryAlertRepository());
+        var repo = new Mock<IAlertRepository>();
+        repo.Setup(r => r.AddAsync(It.IsAny<AlertHub.Domain.Alert.Alert>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AlertPersistenceResult(PersistedId, DateTimeOffset.UtcNow));
+
+        return new IngestAlertOrchestrationService(parsers, validator, _service, repo.Object);
     }
 
     private sealed class PassSchemaValidator : ICapXmlSchemaValidator
@@ -93,17 +98,5 @@ public class IngestAlertOrchestrationServiceTests
     {
         public Result Validate(string rawXml) =>
             Result.Failure(new ResultError(IngestionErrorCodes.XmlSchemaInvalid, "Schema validation failed."));
-    }
-
-    private sealed class InMemoryAlertRepository : IAlertRepository
-    {
-        public Task<AlertPersistenceResult> AddAsync(
-            AlertHub.Domain.Alert.Alert alert,
-            string rawPayload,
-            string contentType,
-            CancellationToken ct)
-        {
-            return Task.FromResult(new AlertPersistenceResult(PersistedId, DateTimeOffset.UtcNow));
-        }
     }
 }
