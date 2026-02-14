@@ -1,5 +1,7 @@
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Infrastructure.Alerts.Ingestion;
+using AlertHub.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,9 +9,12 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers()
     .AddXmlSerializerFormatters();
 builder.Services.AddProblemDetails();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<AlertDomainMappingService>();
 builder.Services.AddScoped<IngestAlertOrchestrationService>();
+builder.Services.AddScoped<IAlertRepository, AlertRepository>();
 builder.Services.AddScoped<ICapAlertParser, JsonCapAlertParser>();
 builder.Services.AddScoped<ICapAlertParser, XmlCapAlertParser>();
 builder.Services.AddSingleton<ICapXmlSchemaValidator, CapXmlSchemaValidator>();
