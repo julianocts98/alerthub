@@ -1,4 +1,5 @@
 using AlertHub.Application.Alerts.Ingestion;
+using AlertHub.Application.Alerts.Query;
 using AlertHub.Infrastructure.Alerts.Ingestion;
 using AlertHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<AlertDomainMappingService>();
 builder.Services.AddScoped<IngestAlertOrchestrationService>();
+builder.Services.AddScoped<AlertQueryService>();
 builder.Services.AddScoped<IAlertRepository, AlertRepository>();
 builder.Services.AddScoped<ICapAlertParser, JsonCapAlertParser>();
 builder.Services.AddScoped<ICapAlertParser, XmlCapAlertParser>();
