@@ -11,6 +11,18 @@ public sealed class AppDbContext : DbContext
 
     public DbSet<AlertEntity> Alerts => Set<AlertEntity>();
 
+    public DbSet<AlertInfoEntity> AlertInfos => Set<AlertInfoEntity>();
+
+    public DbSet<AlertInfoCategoryEntity> AlertInfoCategories => Set<AlertInfoCategoryEntity>();
+
+    public DbSet<AlertInfoResponseTypeEntity> AlertInfoResponseTypes => Set<AlertInfoResponseTypeEntity>();
+
+    public DbSet<AlertInfoEventCodeEntity> AlertInfoEventCodes => Set<AlertInfoEventCodeEntity>();
+
+    public DbSet<AlertInfoParameterEntity> AlertInfoParameters => Set<AlertInfoParameterEntity>();
+
+    public DbSet<AlertInfoResourceEntity> AlertInfoResources => Set<AlertInfoResourceEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
