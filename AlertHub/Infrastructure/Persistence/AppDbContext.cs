@@ -23,6 +23,14 @@ public sealed class AppDbContext : DbContext
 
     public DbSet<AlertInfoResourceEntity> AlertInfoResources => Set<AlertInfoResourceEntity>();
 
+    public DbSet<AlertAreaEntity> AlertAreas => Set<AlertAreaEntity>();
+
+    public DbSet<AlertAreaPolygonEntity> AlertAreaPolygons => Set<AlertAreaPolygonEntity>();
+
+    public DbSet<AlertAreaCircleEntity> AlertAreaCircles => Set<AlertAreaCircleEntity>();
+
+    public DbSet<AlertAreaGeoCodeEntity> AlertAreaGeoCodes => Set<AlertAreaGeoCodeEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
