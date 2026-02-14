@@ -6,12 +6,12 @@ public sealed class IngestAlertOrchestrationService
 {
     private readonly IReadOnlyCollection<ICapAlertParser> _parsers;
     private readonly ICapXmlSchemaValidator _xmlSchemaValidator;
-    private readonly IngestAlertService _ingestAlertService;
+    private readonly AlertDomainMappingService _ingestAlertService;
 
     public IngestAlertOrchestrationService(
         IEnumerable<ICapAlertParser> parsers,
         ICapXmlSchemaValidator xmlSchemaValidator,
-        IngestAlertService ingestAlertService)
+        AlertDomainMappingService ingestAlertService)
     {
         _parsers = parsers.ToArray();
         _xmlSchemaValidator = xmlSchemaValidator;

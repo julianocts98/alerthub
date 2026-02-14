@@ -3,9 +3,9 @@ using AlertHub.Domain.Alert;
 
 namespace AlertHub.Tests.Application.Alerts.Ingestion;
 
-public class IngestAlertServiceTests
+public class AlertDomainMappingServiceTests
 {
-    private readonly IngestAlertService _sut = new();
+    private readonly AlertDomainMappingService _sut = new();
 
     [Fact]
     public async Task ExecuteAsync_WithValidRequest_ReturnsSuccess()

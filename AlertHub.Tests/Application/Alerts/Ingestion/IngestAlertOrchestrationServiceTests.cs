@@ -5,7 +5,7 @@ namespace AlertHub.Tests.Application.Alerts.Ingestion;
 
 public class IngestAlertOrchestrationServiceTests
 {
-    private readonly IngestAlertService _service = new();
+    private readonly AlertDomainMappingService _service = new();
 
     [Fact]
     public async Task ExecuteAsync_WithUnsupportedContentType_ReturnsFailure()

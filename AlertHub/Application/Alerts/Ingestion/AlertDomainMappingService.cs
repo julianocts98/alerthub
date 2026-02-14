@@ -4,7 +4,7 @@ using DomainAlert = AlertHub.Domain.Alert.Alert;
 
 namespace AlertHub.Application.Alerts.Ingestion;
 
-public sealed class IngestAlertService
+public sealed class AlertDomainMappingService
 {
     public Task<Result<AlertIngestionResponse>> ExecuteAsync(AlertIngestionRequest request, CancellationToken ct)
     {

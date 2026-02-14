@@ -8,7 +8,7 @@ builder.Services.AddControllers()
     .AddXmlSerializerFormatters();
 builder.Services.AddProblemDetails();
 
-builder.Services.AddScoped<IngestAlertService>();
+builder.Services.AddScoped<AlertDomainMappingService>();
 builder.Services.AddScoped<IngestAlertOrchestrationService>();
 builder.Services.AddScoped<ICapAlertParser, JsonCapAlertParser>();
 builder.Services.AddScoped<ICapAlertParser, XmlCapAlertParser>();
