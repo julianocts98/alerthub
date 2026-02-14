@@ -11,12 +11,12 @@ namespace AlertHub.Api.Controllers;
 public sealed class AlertsController : ControllerBase
 {
     private readonly IngestAlertOrchestrationService _ingestService;
-    private readonly IAlertRepository _alertRepository;
+    private readonly AlertQueryService _queryService;
 
-    public AlertsController(IngestAlertOrchestrationService ingestService, IAlertRepository alertRepository)
+    public AlertsController(IngestAlertOrchestrationService ingestService, AlertQueryService queryService)
     {
         _ingestService = ingestService;
-        _alertRepository = alertRepository;
+        _queryService = queryService;
     }
 
     [HttpPost("ingest")]
@@ -75,7 +75,7 @@ public sealed class AlertsController : ControllerBase
             PageSize = pageSize,
         };
 
-        var page = await _alertRepository.SearchAsync(query, ct);
+        var page = await _queryService.SearchAsync(query, ct);
         return Ok(page);
     }
 }
