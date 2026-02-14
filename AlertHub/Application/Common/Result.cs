@@ -1,4 +1,4 @@
-namespace AlertHub.Application.Shared;
+namespace AlertHub.Application.Common;
 
 public sealed record Error(string Code, string Message);
 
