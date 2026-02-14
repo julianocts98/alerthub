@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="cap1_2.xsd">
+      <None Update="Infrastructure/Alerts/Ingestion/Schemas/cap1_2.xsd">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
