@@ -1,6 +1,6 @@
 using System.Text;
 using System.Text.Json;
-using AlertHub.Application.Alerts.Ingestion;
+using AlertHub.Application.Alerts;
 using AlertHub.Application.Alerts.Query;
 using AlertHub.Domain.Alert;
 using AlertHub.Infrastructure.Persistence.Entities;

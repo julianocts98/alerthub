@@ -1,3 +1,4 @@
+using AlertHub.Application.Alerts;
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Common;
 using AlertHub.Infrastructure.Alerts.Ingestion;
@@ -5,9 +6,9 @@ using Moq;
 
 namespace AlertHub.Tests.Application.Alerts.Ingestion;
 
-public class IngestAlertOrchestrationServiceTests
+public class AlertIngestionServiceTests
 {
-    private readonly AlertDomainMappingService _service = new();
+    private readonly AlertFactory _factory = new();
     private static readonly Guid PersistedId = Guid.Parse("728637a3-c4bd-4a1f-a61f-86de1947de4f");
 
     [Fact]
@@ -74,7 +75,7 @@ public class IngestAlertOrchestrationServiceTests
         Assert.Equal(PersistedId, result.Value.Id);
     }
 
-    private IngestAlertOrchestrationService BuildService(ICapXmlSchemaValidator validator)
+    private AlertIngestionService BuildService(ICapXmlSchemaValidator validator)
     {
         var parsers = new ICapAlertParser[]
         {
@@ -86,7 +87,7 @@ public class IngestAlertOrchestrationServiceTests
         repo.Setup(r => r.AddAsync(It.IsAny<AlertHub.Domain.Alert.Alert>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new AlertPersistenceResult(PersistedId, DateTimeOffset.UtcNow));
 
-        return new IngestAlertOrchestrationService(parsers, validator, _service, repo.Object);
+        return new AlertIngestionService(parsers, validator, _factory, repo.Object);
     }
 
     private sealed class PassSchemaValidator : ICapXmlSchemaValidator

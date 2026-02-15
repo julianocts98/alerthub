@@ -1,7 +1,7 @@
 using AlertHub.Application.Alerts.Query;
 using DomainAlert = AlertHub.Domain.Alert.Alert;
 
-namespace AlertHub.Application.Alerts.Ingestion;
+namespace AlertHub.Application.Alerts;
 
 public interface IAlertRepository
 {

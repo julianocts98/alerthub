@@ -1,3 +1,4 @@
+using AlertHub.Application.Alerts;
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Alerts.Query;
 using AlertHub.Infrastructure.Alerts.Ingestion;
@@ -13,8 +14,8 @@ builder.Services.AddProblemDetails();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<AlertDomainMappingService>();
-builder.Services.AddScoped<IngestAlertOrchestrationService>();
+builder.Services.AddScoped<AlertFactory>();
+builder.Services.AddScoped<AlertIngestionService>();
 builder.Services.AddScoped<AlertQueryService>();
 builder.Services.AddScoped<IAlertRepository, AlertRepository>();
 builder.Services.AddScoped<ICapAlertParser, JsonCapAlertParser>();

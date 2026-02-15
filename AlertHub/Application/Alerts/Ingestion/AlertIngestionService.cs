@@ -1,23 +1,24 @@
+using AlertHub.Application.Alerts;
 using AlertHub.Application.Common;
 
 namespace AlertHub.Application.Alerts.Ingestion;
 
-public sealed class IngestAlertOrchestrationService
+public sealed class AlertIngestionService
 {
     private readonly IReadOnlyCollection<ICapAlertParser> _parsers;
     private readonly ICapXmlSchemaValidator _xmlSchemaValidator;
-    private readonly AlertDomainMappingService _ingestAlertService;
+    private readonly AlertFactory _alertFactory;
     private readonly IAlertRepository _alertRepository;
 
-    public IngestAlertOrchestrationService(
+    public AlertIngestionService(
         IEnumerable<ICapAlertParser> parsers,
         ICapXmlSchemaValidator xmlSchemaValidator,
-        AlertDomainMappingService ingestAlertService,
+        AlertFactory alertFactory,
         IAlertRepository alertRepository)
     {
         _parsers = parsers.ToArray();
         _xmlSchemaValidator = xmlSchemaValidator;
-        _ingestAlertService = ingestAlertService;
+        _alertFactory = alertFactory;
         _alertRepository = alertRepository;
     }
 
@@ -47,7 +48,7 @@ public sealed class IngestAlertOrchestrationService
                 parseResult.Error ?? new ResultError(IngestionErrorCodes.InvalidPayload, "Payload could not be parsed."));
         }
 
-        var domainResult = await _ingestAlertService.ExecuteAsync(parseResult.Value, ct);
+        var domainResult = await _alertFactory.CreateAsync(parseResult.Value, ct);
         if (!domainResult.IsSuccess || domainResult.Value is null)
         {
             return Result<AlertIngestionResponse>.Failure(

@@ -3,16 +3,16 @@ using AlertHub.Domain.Alert;
 
 namespace AlertHub.Tests.Application.Alerts.Ingestion;
 
-public class AlertDomainMappingServiceTests
+public class AlertFactoryTests
 {
-    private readonly AlertDomainMappingService _sut = new();
+    private readonly AlertFactory _sut = new();
 
     [Fact]
-    public async Task ExecuteAsync_WithValidRequest_ReturnsSuccess()
+    public async Task CreateAsync_WithValidRequest_ReturnsSuccess()
     {
         var request = BuildValidRequest();
 
-        var result = await _sut.ExecuteAsync(request, CancellationToken.None);
+        var result = await _sut.CreateAsync(request, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
@@ -21,13 +21,13 @@ public class AlertDomainMappingServiceTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenDomainRuleFails_ReturnsFailure()
+    public async Task CreateAsync_WhenDomainRuleFails_ReturnsFailure()
     {
         var request = BuildValidRequest(
             scope: AlertScope.Private,
             addresses: []);
 
-        var result = await _sut.ExecuteAsync(request, CancellationToken.None);
+        var result = await _sut.CreateAsync(request, CancellationToken.None);
 
         Assert.False(result.IsSuccess);
         Assert.Null(result.Value);
@@ -36,11 +36,11 @@ public class AlertDomainMappingServiceTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenIdentifierHasForbiddenChars_ReturnsFailure()
+    public async Task CreateAsync_WhenIdentifierHasForbiddenChars_ReturnsFailure()
     {
         var request = BuildValidRequest(identifier: "bad id");
 
-        var result = await _sut.ExecuteAsync(request, CancellationToken.None);
+        var result = await _sut.CreateAsync(request, CancellationToken.None);
 
         Assert.False(result.IsSuccess);
         Assert.Null(result.Value);
