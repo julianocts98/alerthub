@@ -1,4 +1,5 @@
 using AlertHub.Infrastructure.Persistence.Entities;
+using AlertHub.Infrastructure.Persistence.Entities.Subscriptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace AlertHub.Infrastructure.Persistence;
@@ -30,6 +31,10 @@ public sealed class AppDbContext : DbContext
     public DbSet<AlertAreaCircleEntity> AlertAreaCircles => Set<AlertAreaCircleEntity>();
 
     public DbSet<AlertAreaGeoCodeEntity> AlertAreaGeoCodes => Set<AlertAreaGeoCodeEntity>();
+
+    public DbSet<SubscriptionEntity> Subscriptions => Set<SubscriptionEntity>();
+
+    public DbSet<SubscriptionCategoryEntity> SubscriptionCategories => Set<SubscriptionCategoryEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
