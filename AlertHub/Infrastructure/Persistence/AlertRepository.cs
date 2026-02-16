@@ -23,7 +23,7 @@ public sealed class AlertRepository : IAlertRepository
         return await _dbContext.Alerts.AnyAsync(a => a.Sender == sender && a.Identifier == identifier, ct);
     }
 
-    public async Task<AlertPersistenceResult> AddAsync(
+    public Task<AlertPersistenceResult> AddAsync(
         DomainAlert alert,
         string rawPayload,
         string contentType,
@@ -60,7 +60,7 @@ public sealed class AlertRepository : IAlertRepository
 
         _dbContext.Alerts.Add(entity);
 
-        return new AlertPersistenceResult(entity.Id, entity.IngestedAtUtc);
+        return Task.FromResult(new AlertPersistenceResult(entity.Id, entity.IngestedAtUtc));
     }
 
     public async Task<AlertPage> SearchAsync(AlertSearchQuery query, CancellationToken ct)

@@ -53,9 +53,11 @@ public sealed class SubscriptionsController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<SubscriptionResponse>> GetById(Guid id, CancellationToken ct)
     {
-        // Implementation for GetById is not strictly required for the POST test but 
-        // CreatedAtAction expects it. Let's add it to the Service/Repo if needed later.
-        return Ok();
+        var response = await _subscriptionService.GetByIdAsync(id, ct);
+        if (response is null)
+            return NotFound();
+
+        return Ok(response);
     }
 }
 

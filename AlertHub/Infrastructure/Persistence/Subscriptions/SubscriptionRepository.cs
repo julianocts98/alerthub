@@ -15,7 +15,7 @@ public sealed class SubscriptionRepository : ISubscriptionRepository
         _dbContext = dbContext;
     }
 
-    public async Task AddAsync(Subscription subscription, CancellationToken ct)
+    public Task AddAsync(Subscription subscription, CancellationToken ct)
     {
         var entity = new SubscriptionEntity
         {
@@ -36,6 +36,7 @@ public sealed class SubscriptionRepository : ISubscriptionRepository
         }
 
         _dbContext.Subscriptions.Add(entity);
+        return Task.CompletedTask;
     }
 
     public async Task<Subscription?> GetByIdAsync(Guid id, CancellationToken ct)

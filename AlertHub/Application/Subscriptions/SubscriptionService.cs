@@ -46,6 +46,12 @@ public sealed class SubscriptionService
         return MapToResponse(subscription);
     }
 
+    public async Task<SubscriptionResponse?> GetByIdAsync(Guid id, CancellationToken ct)
+    {
+        var subscription = await _repository.GetByIdAsync(id, ct);
+        return subscription is null ? null : MapToResponse(subscription);
+    }
+
     private static SubscriptionResponse MapToResponse(Subscription s) =>
         new(s.Id, s.UserId, s.Channel, s.Target, s.IsActive, s.MinSeverity, s.Categories.ToList());
 }
