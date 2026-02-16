@@ -7,7 +7,9 @@ using AlertHub.Infrastructure.Alerts.Ingestion;
 using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Subscriptions;
 using AlertHub.Application.Alerts.Matching;
+using AlertHub.Application.Common.Delivery;
 using AlertHub.Infrastructure.BackgroundJobs;
+using AlertHub.Infrastructure.Delivery.Telegram;
 using AlertHub.Infrastructure.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,10 +21,12 @@ builder.Services.AddControllers()
 builder.Services.AddProblemDetails();
 
 builder.Services.AddScoped<AlertSubscriptionMatcher>();
+builder.Services.AddScoped<IAlertDeliveryChannel, TelegramDeliveryChannel>();
 
 builder.Services.AddSingleton<AuditingInterceptor>();
 builder.Services.AddHostedService<OutboxPublisher>();
 builder.Services.AddHostedService<SubscriptionMatcherWorker>();
+builder.Services.AddHostedService<AlertDeliveryWorker>();
 
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 {
