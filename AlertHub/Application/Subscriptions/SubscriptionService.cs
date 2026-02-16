@@ -1,23 +1,9 @@
 using AlertHub.Application.Common;
 using AlertHub.Domain.Alert;
+using AlertHub.Domain.Common;
 using AlertHub.Domain.Subscriptions;
 
 namespace AlertHub.Application.Subscriptions;
-
-public record CreateSubscriptionRequest(
-    SubscriptionChannel Channel,
-    string Target,
-    AlertSeverity? MinSeverity = null,
-    List<AlertInfoCategory>? Categories = null);
-
-public record SubscriptionResponse(
-    Guid Id,
-    string UserId,
-    SubscriptionChannel Channel,
-    string Target,
-    bool IsActive,
-    AlertSeverity? MinSeverity,
-    List<AlertInfoCategory> Categories);
 
 public sealed class SubscriptionService
 {
@@ -30,25 +16,38 @@ public sealed class SubscriptionService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<SubscriptionResponse> CreateSubscriptionAsync(CreateSubscriptionRequest request, string userId, CancellationToken ct)
+    public async Task<Result<SubscriptionResponse>> CreateSubscriptionAsync(CreateSubscriptionRequest request, string userId, CancellationToken ct)
     {
-        var subscription = Subscription.Create(
-            userId,
-            request.Channel,
-            request.Target,
-            request.MinSeverity,
-            request.Categories);
+        try
+        {
+            var subscription = Subscription.Create(
+                userId,
+                request.Channel,
+                request.Target,
+                request.MinSeverity,
+                request.Categories);
 
-        await _repository.AddAsync(subscription, ct);
-        await _unitOfWork.SaveChangesAsync(ct);
+            await _repository.AddAsync(subscription, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
 
-        return MapToResponse(subscription);
+            return Result<SubscriptionResponse>.Success(MapToResponse(subscription));
+        }
+        catch (DomainException ex)
+        {
+            return Result<SubscriptionResponse>.Failure(new ResultError(ex.Error.Code, ex.Error.Message));
+        }
     }
 
-    public async Task<SubscriptionResponse?> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<Result<SubscriptionResponse>> GetByIdAsync(Guid id, CancellationToken ct)
     {
         var subscription = await _repository.GetByIdAsync(id, ct);
-        return subscription is null ? null : MapToResponse(subscription);
+        if (subscription is null)
+        {
+            return Result<SubscriptionResponse>.Failure(
+                new ResultError("subscription.not_found", $"Subscription with ID '{id}' was not found."));
+        }
+
+        return Result<SubscriptionResponse>.Success(MapToResponse(subscription));
     }
 
     private static SubscriptionResponse MapToResponse(Subscription s) =>

@@ -1,3 +1,5 @@
+using AlertHub.Application.Common;
+
 namespace AlertHub.Application.Deliveries;
 
 public sealed class DeliveryService
@@ -16,13 +18,18 @@ public sealed class DeliveryService
         return _repository.GetAsync(request.Status, effectiveLimit, ct);
     }
 
-    public Task<RetryDeliveryResult> RetryDeliveryAsync(Guid id, CancellationToken ct)
-        => _repository.RetryFailedAsync(id, ct);
-}
-
-public sealed class GetDeliveriesRequest
-{
-    public DeliveryStatusFilter? Status { get; init; }
-
-    public int Limit { get; init; } = 50;
+    public async Task<Result> RetryDeliveryAsync(Guid id, CancellationToken ct)
+    {
+        var result = await _repository.RetryFailedAsync(id, ct);
+        return result switch
+        {
+            RetryDeliveryResult.Retried => Result.Success(),
+            RetryDeliveryResult.NotFound => Result.Failure(
+                new ResultError("delivery.not_found", $"Delivery with ID '{id}' was not found.")),
+            RetryDeliveryResult.NotFailed => Result.Failure(
+                new ResultError("delivery.invalid_state", "Only failed deliveries can be retried.")),
+            _ => Result.Failure(
+                new ResultError("delivery.retry_failed", "An unexpected delivery retry error occurred."))
+        };
+    }
 }
