@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Common;
+using AlertHub.Infrastructure.Alerts.Ingestion.Transport;
 
 namespace AlertHub.Infrastructure.Alerts.Ingestion;
 
@@ -19,13 +20,14 @@ public sealed class JsonCapAlertParser : ICapAlertParser
     {
         try
         {
-            var request = JsonSerializer.Deserialize<AlertIngestionRequest>(rawPayload, JsonOptions);
-            if (request is null)
+            var transportRequest = JsonSerializer.Deserialize<CapAlertTransportRequest>(rawPayload, JsonOptions);
+            if (transportRequest is null)
             {
                 return Result<AlertIngestionRequest>.Failure(
                     new ResultError(IngestionErrorCodes.InvalidPayload, "Payload could not be parsed into a CAP alert request."));
             }
 
+            var request = CapAlertTransportMapper.ToApplicationRequest(transportRequest);
             return Result<AlertIngestionRequest>.Success(request);
         }
         catch (JsonException ex)

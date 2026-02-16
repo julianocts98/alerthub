@@ -1,12 +1,13 @@
 using System.Xml.Serialization;
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Common;
+using AlertHub.Infrastructure.Alerts.Ingestion.Transport;
 
 namespace AlertHub.Infrastructure.Alerts.Ingestion;
 
 public sealed class XmlCapAlertParser : ICapAlertParser
 {
-    private static readonly XmlSerializer Serializer = new(typeof(AlertIngestionRequest));
+    private static readonly XmlSerializer Serializer = new(typeof(CapAlertTransportRequest));
 
     public bool CanHandle(string contentType) => Matches(contentType, "application/xml") || Matches(contentType, "text/xml");
 
@@ -15,14 +16,15 @@ public sealed class XmlCapAlertParser : ICapAlertParser
         try
         {
             using var reader = new StringReader(rawPayload);
-            var request = Serializer.Deserialize(reader) as AlertIngestionRequest;
+            var transportRequest = Serializer.Deserialize(reader) as CapAlertTransportRequest;
 
-            if (request is null)
+            if (transportRequest is null)
             {
                 return Result<AlertIngestionRequest>.Failure(
                     new ResultError(IngestionErrorCodes.InvalidPayload, "Payload could not be parsed into a CAP alert request."));
             }
 
+            var request = CapAlertTransportMapper.ToApplicationRequest(transportRequest);
             return Result<AlertIngestionRequest>.Success(request);
         }
         catch (InvalidOperationException ex)

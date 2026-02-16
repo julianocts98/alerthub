@@ -1,5 +1,5 @@
 using System.Xml.Serialization;
-using AlertHub.Application.Alerts.Ingestion;
+using AlertHub.Infrastructure.Alerts.Ingestion.Transport;
 using AlertHub.Domain.Alert;
 
 namespace AlertHub.Tests.Application.Alerts.Ingestion;
@@ -30,10 +30,10 @@ public class AlertIngestionRequestXmlTests
                            </alert>
                            """;
 
-        var serializer = new XmlSerializer(typeof(AlertIngestionRequest));
+        var serializer = new XmlSerializer(typeof(CapAlertTransportRequest));
         using var reader = new StringReader(xml);
 
-        var request = (AlertIngestionRequest?)serializer.Deserialize(reader);
+        var request = (CapAlertTransportRequest?)serializer.Deserialize(reader);
 
         Assert.NotNull(request);
         Assert.Equal("cap-alert-123", request!.Identifier);
@@ -85,10 +85,10 @@ public class AlertIngestionRequestXmlTests
                            </alert>
                            """;
 
-        var serializer = new XmlSerializer(typeof(AlertIngestionRequest));
+        var serializer = new XmlSerializer(typeof(CapAlertTransportRequest));
         using var reader = new StringReader(xml);
 
-        var request = (AlertIngestionRequest?)serializer.Deserialize(reader);
+        var request = (CapAlertTransportRequest?)serializer.Deserialize(reader);
 
         Assert.NotNull(request);
         Assert.Equal("43b080713727", request!.Identifier);
@@ -169,10 +169,10 @@ public class AlertIngestionRequestXmlTests
                            </alert>
                            """;
 
-        var serializer = new XmlSerializer(typeof(AlertIngestionRequest));
+        var serializer = new XmlSerializer(typeof(CapAlertTransportRequest));
         using var reader = new StringReader(xml);
 
-        var request = (AlertIngestionRequest?)serializer.Deserialize(reader);
+        var request = (CapAlertTransportRequest?)serializer.Deserialize(reader);
 
         Assert.NotNull(request);
         Assert.Equal("KSTO1055887203", request!.Identifier);
@@ -256,10 +256,10 @@ public class AlertIngestionRequestXmlTests
                            </alert>
                            """;
 
-        var serializer = new XmlSerializer(typeof(AlertIngestionRequest));
+        var serializer = new XmlSerializer(typeof(CapAlertTransportRequest));
         using var reader = new StringReader(xml);
 
-        var request = (AlertIngestionRequest?)serializer.Deserialize(reader);
+        var request = (CapAlertTransportRequest?)serializer.Deserialize(reader);
 
         Assert.NotNull(request);
         Assert.Equal("TRI13970876.2", request!.Identifier);
