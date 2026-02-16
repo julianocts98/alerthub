@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AlertHub.Api.Deliveries;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/deliveries")]
 [Authorize(Roles = Roles.Admin)]
 public sealed class DeliveriesController : ControllerBase
 {

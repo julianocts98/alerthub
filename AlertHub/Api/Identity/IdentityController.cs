@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AlertHub.Api.Identity;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/identity")]
 public sealed class IdentityController : ControllerBase
 {
     private const string DemoIssuerHeaderName = "X-Demo-Issuer-Key";
