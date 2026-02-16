@@ -87,7 +87,9 @@ public class AlertIngestionServiceTests
         repo.Setup(r => r.AddAsync(It.IsAny<AlertHub.Domain.Alert.Alert>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new AlertPersistenceResult(PersistedId, DateTimeOffset.UtcNow));
 
-        return new AlertIngestionService(parsers, validator, _factory, repo.Object);
+        var uow = new Mock<IUnitOfWork>();
+
+        return new AlertIngestionService(parsers, validator, _factory, repo.Object, uow.Object);
     }
 
     private sealed class PassSchemaValidator : ICapXmlSchemaValidator

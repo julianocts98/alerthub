@@ -31,7 +31,6 @@ public sealed class SubscriptionRepository : ISubscriptionRepository
         };
 
         _dbContext.Subscriptions.Add(entity);
-        await _dbContext.SaveChangesAsync(ct);
     }
 
     public async Task<Subscription?> GetByIdAsync(Guid id, CancellationToken ct)

@@ -41,6 +41,6 @@ public sealed class SubscriptionsController : ControllerBase
     {
         // Implementation for GetById is not strictly required for the POST test but 
         // CreatedAtAction expects it. Let's add it to the Service/Repo if needed later.
-        return Ok(); 
+        return Ok();
     }
 }

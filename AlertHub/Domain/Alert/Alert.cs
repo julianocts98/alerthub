@@ -1,3 +1,4 @@
+using AlertHub.Domain.Alert.Events;
 using AlertHub.Domain.Common;
 
 namespace AlertHub.Domain.Alert;
@@ -6,8 +7,10 @@ namespace AlertHub.Domain.Alert;
 /// CAP alert aggregate root.
 /// All write operations are coordinated through this root.
 /// </summary>
-public class Alert
+public class Alert : AggregateRoot
 {
+    public Guid Id { get; }
+
     public string Identifier { get; }
 
     public string Sender { get; }
@@ -43,6 +46,7 @@ public class Alert
     private readonly List<AlertInfo> _infos = [];
 
     private Alert(
+        Guid id,
         string identifier,
         string sender,
         DateTimeOffset sent,
@@ -50,6 +54,7 @@ public class Alert
         AlertMessageType messageType,
         AlertScope scope)
     {
+        Id = id;
         Identifier = identifier;
         Sender = sender;
         Sent = sent;
@@ -85,7 +90,11 @@ public class Alert
         if (!Enum.IsDefined(scope))
             throw new DomainException(AlertDomainErrors.InvalidScope);
 
-        return new Alert(identifier, sender, sent, status, messageType, scope);
+        var alert = new Alert(Guid.NewGuid(), identifier, sender, sent, status, messageType, scope);
+
+        alert.RaiseDomainEvent(new AlertIngestedDomainEvent(alert.Id, alert.Identifier, alert.Sender, alert.Sent));
+
+        return alert;
     }
 
     public void SetSource(string? source)

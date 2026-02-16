@@ -34,7 +34,7 @@ public sealed class SubscriptionsControllerTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
-        
+
         var result = await response.Content.ReadFromJsonAsync<SubscriptionResponse>();
         result.Should().NotBeNull();
         result!.UserId.Should().Be(request.UserId);

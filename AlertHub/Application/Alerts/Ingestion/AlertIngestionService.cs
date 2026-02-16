@@ -9,17 +9,20 @@ public sealed class AlertIngestionService
     private readonly ICapXmlSchemaValidator _xmlSchemaValidator;
     private readonly AlertFactory _alertFactory;
     private readonly IAlertRepository _alertRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public AlertIngestionService(
         IEnumerable<ICapAlertParser> parsers,
         ICapXmlSchemaValidator xmlSchemaValidator,
         AlertFactory alertFactory,
-        IAlertRepository alertRepository)
+        IAlertRepository alertRepository,
+        IUnitOfWork unitOfWork)
     {
         _parsers = parsers.ToArray();
         _xmlSchemaValidator = xmlSchemaValidator;
         _alertFactory = alertFactory;
         _alertRepository = alertRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<AlertIngestionResponse>> ExecuteAsync(string rawPayload, string contentType, CancellationToken ct)
@@ -56,6 +59,8 @@ public sealed class AlertIngestionService
         }
 
         var persisted = await _alertRepository.AddAsync(domainResult.Value, rawPayload, contentType, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
+
         var response = new AlertIngestionResponse
         {
             Id = persisted.Id,

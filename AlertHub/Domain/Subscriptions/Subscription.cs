@@ -1,9 +1,10 @@
 using AlertHub.Domain.Alert;
 using AlertHub.Domain.Common;
+using AlertHub.Domain.Subscriptions.Events;
 
 namespace AlertHub.Domain.Subscriptions;
 
-public sealed class Subscription
+public sealed class Subscription : AggregateRoot
 {
     public Guid Id { get; }
 
@@ -71,6 +72,8 @@ public sealed class Subscription
         var subscription = new Subscription(Guid.NewGuid(), userId, channel, target, true);
 
         subscription.UpdateFilter(minSeverity, categories);
+
+        subscription.RaiseDomainEvent(new SubscriptionCreatedDomainEvent(subscription.Id, subscription.UserId, subscription.Target));
 
         return subscription;
     }

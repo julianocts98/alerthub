@@ -1,10 +1,14 @@
+using System.Text.Json;
+using AlertHub.Application.Common;
+using AlertHub.Domain.Common;
 using AlertHub.Infrastructure.Persistence.Entities;
+using AlertHub.Infrastructure.Persistence.Entities.Outbox;
 using AlertHub.Infrastructure.Persistence.Entities.Subscriptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace AlertHub.Infrastructure.Persistence;
 
-public sealed class AppDbContext : DbContext
+public sealed class AppDbContext : DbContext, IUnitOfWork
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -36,9 +40,40 @@ public sealed class AppDbContext : DbContext
 
     public DbSet<SubscriptionCategoryEntity> SubscriptionCategories => Set<SubscriptionCategoryEntity>();
 
+    public DbSet<OutboxMessageEntity> OutboxMessages => Set<OutboxMessageEntity>();
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ConvertDomainEventsToOutboxMessages();
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
+    }
+
+    private void ConvertDomainEventsToOutboxMessages()
+    {
+        var outboxMessages = ChangeTracker
+            .Entries<AggregateRoot>()
+            .Select(x => x.Entity)
+            .SelectMany(aggregateRoot =>
+            {
+                var domainEvents = aggregateRoot.DomainEvents.ToList();
+                aggregateRoot.ClearDomainEvents();
+                return domainEvents;
+            })
+            .Select(domainEvent => new OutboxMessageEntity
+            {
+                Id = Guid.NewGuid(),
+                OccurredOnUtc = domainEvent.OccurredOn,
+                Type = domainEvent.GetType().FullName ?? domainEvent.GetType().Name,
+                Content = JsonSerializer.Serialize(domainEvent, domainEvent.GetType())
+            })
+            .ToList();
+
+        OutboxMessages.AddRange(outboxMessages);
     }
 }

@@ -1,3 +1,4 @@
+using AlertHub.Application.Common;
 using AlertHub.Domain.Alert;
 using AlertHub.Domain.Subscriptions;
 
@@ -22,10 +23,12 @@ public record SubscriptionResponse(
 public sealed class SubscriptionService
 {
     private readonly ISubscriptionRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public SubscriptionService(ISubscriptionRepository repository)
+    public SubscriptionService(ISubscriptionRepository repository, IUnitOfWork unitOfWork)
     {
         _repository = repository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<SubscriptionResponse> CreateSubscriptionAsync(CreateSubscriptionRequest request, CancellationToken ct)
@@ -38,6 +41,7 @@ public sealed class SubscriptionService
             request.Categories);
 
         await _repository.AddAsync(subscription, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return MapToResponse(subscription);
     }

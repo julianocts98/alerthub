@@ -26,11 +26,9 @@ public sealed class AlertRepository : IAlertRepository
     {
         var now = DateTimeOffset.UtcNow;
 
-        var id = Guid.NewGuid();
-
         var entity = new AlertEntity
         {
-            Id = id,
+            Id = alert.Id,
             Identifier = alert.Identifier,
             Sender = alert.Sender,
             Sent = alert.Sent,
@@ -47,11 +45,10 @@ public sealed class AlertRepository : IAlertRepository
             RawPayload = rawPayload,
             ContentType = contentType,
             IngestedAtUtc = now,
-            Infos = alert.Infos.Select(i => MapInfo(id, i)).ToList(),
+            Infos = alert.Infos.Select(i => MapInfo(alert.Id, i)).ToList(),
         };
 
         _dbContext.Alerts.Add(entity);
-        await _dbContext.SaveChangesAsync(ct);
 
         return new AlertPersistenceResult(entity.Id, entity.IngestedAtUtc);
     }
