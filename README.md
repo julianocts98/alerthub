@@ -253,5 +253,5 @@ Security integration checks include:
 
 ## Standards reference
 
-- CAP 1.2 standard (OASIS): https://www.oasis-open.org/standard/cap/
+- CAP 1.2 standard (OASIS): https://docs.oasis-open.org/emergency/cap/v1.2/CAP-v1.2-os.html
 - The XSD used by this project for XML validation (`AlertHub/Infrastructure/Alerts/Ingestion/Schemas/cap1_2.xsd`) was sourced from the CAP 1.2 specification resources above.
