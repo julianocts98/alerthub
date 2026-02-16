@@ -100,6 +100,58 @@ Default local URL (from launch settings):
 In `Development`, OpenAPI is exposed at:
 - `http://localhost:5082/openapi/v1.json`
 
+## Running with Dockerfile
+
+The repository includes a multi-stage `Dockerfile` that builds the API with .NET SDK and runs it on a chiseled (distroless-style) ASP.NET runtime image.
+
+### 1. Build the API image
+
+```bash
+docker build -t alerthub-api:local .
+```
+
+### 2. Start infrastructure (PostgreSQL + RabbitMQ)
+
+```bash
+docker compose up -d postgres rabbitmq
+```
+
+### 3. Run database migrations (once per schema change)
+
+```bash
+dotnet ef database update --project AlertHub --startup-project AlertHub
+```
+
+### 4. Run the API container
+
+```bash
+docker run --rm \
+  --name alerthub-api \
+  --network alerthub_default \
+  -p 8080:8080 \
+  -e ConnectionStrings__DefaultConnection="Host=alerthub-postgres;Port=5432;Database=alerthub;Username=alerthub;Password=alerthub" \
+  -e RabbitMQ__HostName="alerthub-rabbitmq" \
+  -e RabbitMQ__Port="5672" \
+  -e RabbitMQ__UserName="alerthub" \
+  -e RabbitMQ__Password="alerthub" \
+  -e Jwt__Issuer="AlertHub" \
+  -e Jwt__Audience="AlertHub" \
+  -e Jwt__Key="a_very_long_secret_key_for_development_purposes" \
+  -e Identity__IssuerApiKey="change-this-demo-issuer-key" \
+  -e Database__ApplyMigrationsOnStartup="true" \
+  alerthub-api:local
+```
+
+If your Compose project/network name differs, replace `alerthub_default` with your actual network (`docker network ls`).
+
+API URL in container mode:
+- `http://localhost:8080`
+
+OpenAPI endpoint:
+- `http://localhost:8080/openapi/v1.json` (when running in `Development`)
+
+If you do not enable `Database__ApplyMigrationsOnStartup`, run migrations manually before starting the container.
+
 ## Authentication and authorization
 
 All operational endpoints are protected by JWT bearer auth.
