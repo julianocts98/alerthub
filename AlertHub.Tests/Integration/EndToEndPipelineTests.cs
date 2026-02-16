@@ -1,15 +1,14 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
-using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Api.Subscriptions;
 using AlertHub.Domain.Subscriptions;
+using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Entities.Deliveries;
 using AlertHub.Tests.Integration.Helpers;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
-using AlertHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AlertHub.Tests.Integration;
 
@@ -23,7 +22,7 @@ public sealed class EndToEndPipelineTests
     {
         _factory = fixture.Factory;
         _client = _factory.CreateClient();
-        _client.DefaultRequestHeaders.Authorization = 
+        _client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue(TestAuthHandler.AuthenticationScheme);
     }
 
@@ -62,7 +61,7 @@ public sealed class EndToEndPipelineTests
         """;
         using var content = new StringContent(alertXml, Encoding.UTF8, "application/xml");
         var ingestResponse = await _client.PostAsync("/api/alerts/ingest", content);
-        
+
         if (ingestResponse.StatusCode != HttpStatusCode.Created)
         {
             var error = await ingestResponse.Content.ReadAsStringAsync();
@@ -75,11 +74,11 @@ public sealed class EndToEndPipelineTests
         for (int i = 0; i < 10; i++)
         {
             await Task.Delay(2000); // Wait for background jobs to tick
-            
+
             using var scope = _factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             delivery = await db.AlertDeliveries.FirstOrDefaultAsync(d => d.Target == "12345678");
-            
+
             if (delivery != null) break;
         }
 

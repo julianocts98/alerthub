@@ -2,7 +2,6 @@ using System.Xml;
 using System.Xml.Schema;
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Common;
-using Microsoft.Extensions.Hosting;
 
 namespace AlertHub.Infrastructure.Alerts.Ingestion;
 

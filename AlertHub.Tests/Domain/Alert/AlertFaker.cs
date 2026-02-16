@@ -1,5 +1,5 @@
-using Bogus;
 using AlertHub.Domain.Alert;
+using Bogus;
 using DomainAlert = AlertHub.Domain.Alert.Alert;
 
 namespace AlertHub.Tests.Domain.Alert;

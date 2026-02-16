@@ -1,6 +1,5 @@
 using AlertHub.Domain.Alert;
 using AlertHub.Domain.Common;
-using Xunit;
 
 namespace AlertHub.Tests.Domain.Alert;
 

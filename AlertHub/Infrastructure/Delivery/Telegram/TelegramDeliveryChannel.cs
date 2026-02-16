@@ -1,7 +1,5 @@
 using AlertHub.Application.Common.Delivery;
 using AlertHub.Domain.Subscriptions;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 
 namespace AlertHub.Infrastructure.Delivery.Telegram;

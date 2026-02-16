@@ -1,6 +1,6 @@
 using AlertHub.Domain.Alert;
-using AlertHub.Domain.Subscriptions;
 using AlertHub.Domain.Common;
+using AlertHub.Domain.Subscriptions;
 
 namespace AlertHub.Infrastructure.Persistence.Entities.Subscriptions;
 

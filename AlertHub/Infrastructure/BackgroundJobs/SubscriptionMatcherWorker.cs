@@ -1,15 +1,9 @@
+using System.Text;
 using System.Text.Json;
-using System.Diagnostics;
-using AlertHub.Infrastructure.Telemetry;
 using AlertHub.Application.Alerts.Matching;
-using AlertHub.Application.Common.Messaging;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using AlertHub.Infrastructure.Telemetry;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System.Text;
 
 namespace AlertHub.Infrastructure.BackgroundJobs;
 

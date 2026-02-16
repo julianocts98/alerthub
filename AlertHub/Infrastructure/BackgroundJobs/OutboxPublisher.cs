@@ -1,15 +1,8 @@
-using System.Text.Json;
-using System.Diagnostics;
-using AlertHub.Infrastructure.Telemetry;
-using AlertHub.Infrastructure.Persistence;
-using AlertHub.Infrastructure.Persistence.Entities.Outbox;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
-using RabbitMQ.Client;
 using System.Text;
+using AlertHub.Infrastructure.Persistence;
+using AlertHub.Infrastructure.Telemetry;
+using Microsoft.EntityFrameworkCore;
+using RabbitMQ.Client;
 
 namespace AlertHub.Infrastructure.BackgroundJobs;
 

@@ -16,7 +16,7 @@ public sealed class SubscriptionsControllerTests
     public SubscriptionsControllerTests(PostgresContainerFixture fixture)
     {
         _client = fixture.Factory.CreateClient();
-        _client.DefaultRequestHeaders.Authorization = 
+        _client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue(Helpers.TestAuthHandler.AuthenticationScheme);
     }
 

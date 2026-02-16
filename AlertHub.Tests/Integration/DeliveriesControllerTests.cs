@@ -1,6 +1,4 @@
 using System.Net;
-using System.Net.Http.Json;
-using AlertHub.Infrastructure.Persistence.Entities.Deliveries;
 using AlertHub.Tests.Integration.Helpers;
 using FluentAssertions;
 
@@ -14,7 +12,7 @@ public sealed class DeliveriesControllerTests
     public DeliveriesControllerTests(PostgresContainerFixture fixture)
     {
         _client = fixture.Factory.CreateClient();
-        _client.DefaultRequestHeaders.Authorization = 
+        _client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue(TestAuthHandler.AuthenticationScheme);
     }
 

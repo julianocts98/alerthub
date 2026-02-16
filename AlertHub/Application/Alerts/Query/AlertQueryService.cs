@@ -1,5 +1,3 @@
-using AlertHub.Application.Alerts;
-
 namespace AlertHub.Application.Alerts.Query;
 
 public sealed class AlertQueryService

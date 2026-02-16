@@ -1,10 +1,7 @@
-using AlertHub.Application.Common;
 using AlertHub.Domain.Alert;
-using AlertHub.Domain.Subscriptions;
 using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Entities.Deliveries;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace AlertHub.Application.Alerts.Matching;
 

@@ -1,14 +1,8 @@
 using AlertHub.Application.Common.Delivery;
-using System.Diagnostics;
-using AlertHub.Infrastructure.Telemetry;
 using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Entities.Deliveries;
+using AlertHub.Infrastructure.Telemetry;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-
-using Microsoft.Extensions.Configuration;
 
 namespace AlertHub.Infrastructure.BackgroundJobs;
 

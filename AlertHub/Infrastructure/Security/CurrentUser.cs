@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using AlertHub.Application.Common.Security;
-using Microsoft.AspNetCore.Http;
 
 namespace AlertHub.Infrastructure.Security;
 

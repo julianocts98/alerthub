@@ -1,4 +1,3 @@
-using AlertHub.Api.Alerts;
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Alerts.Query;
 using AlertHub.Application.Common.Security;

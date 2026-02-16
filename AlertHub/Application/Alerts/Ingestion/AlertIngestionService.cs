@@ -1,4 +1,3 @@
-using AlertHub.Application.Alerts;
 using AlertHub.Application.Common;
 
 namespace AlertHub.Application.Alerts.Ingestion;

@@ -1,26 +1,25 @@
-using AlertHub.Application.Alerts.Matching;
-using AlertHub.Application.Common.Delivery;
+using System.Text;
 using AlertHub.Application.Alerts;
 using AlertHub.Application.Alerts.Ingestion;
+using AlertHub.Application.Alerts.Matching;
 using AlertHub.Application.Alerts.Query;
 using AlertHub.Application.Common;
+using AlertHub.Application.Common.Delivery;
+using AlertHub.Application.Common.Security;
 using AlertHub.Application.Subscriptions;
 using AlertHub.Infrastructure.Alerts.Ingestion;
-using AlertHub.Infrastructure.Persistence;
-using AlertHub.Infrastructure.Persistence.Subscriptions;
 using AlertHub.Infrastructure.BackgroundJobs;
 using AlertHub.Infrastructure.Delivery.Telegram;
+using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Interceptors;
+using AlertHub.Infrastructure.Persistence.Subscriptions;
+using AlertHub.Infrastructure.Security;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-
-using AlertHub.Application.Common.Security;
-using AlertHub.Infrastructure.Security;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 

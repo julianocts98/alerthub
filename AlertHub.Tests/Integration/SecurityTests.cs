@@ -1,7 +1,5 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Text;
-using AlertHub.Tests.Integration.Helpers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -17,9 +15,12 @@ public sealed class SecurityTests : IClassFixture<PostgresContainerFixture>
         // Create a separate client from a factory that DOES NOT have the TestAuthHandler
         // This ensures the real JWT Bearer middleware handles the request.
         var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder => {
-                builder.ConfigureAppConfiguration((_, config) => {
-                    config.AddInMemoryCollection(new Dictionary<string, string?> {
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureAppConfiguration((_, config) =>
+                {
+                    config.AddInMemoryCollection(new Dictionary<string, string?>
+                    {
                         ["ConnectionStrings:DefaultConnection"] = fixture.ConnectionString
                     });
                 });
@@ -40,7 +41,7 @@ public sealed class SecurityTests : IClassFixture<PostgresContainerFixture>
         // We use a custom client that has no claims
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/alerts/ingest");
         request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
-        
+
         // Simulating a token that is valid but has no required scope
         // For simplicity in this test, we just don't set the header, which returns 401. 
         // A true 403 would require a different TestAuthHandler setup.

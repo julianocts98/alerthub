@@ -26,7 +26,7 @@ public sealed class SubscriptionsController : ControllerBase
         CancellationToken ct)
     {
         var userId = _currentUser.Id ?? throw new UnauthorizedAccessException();
-        
+
         var request = new CreateSubscriptionRequest(
             userId,
             requestDto.Channel,

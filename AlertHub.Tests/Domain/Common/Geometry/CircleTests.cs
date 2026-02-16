@@ -1,6 +1,5 @@
 using AlertHub.Domain.Common;
 using AlertHub.Domain.Common.Geometry;
-using Xunit;
 
 namespace AlertHub.Tests.Domain.Common.Geometry;
 
