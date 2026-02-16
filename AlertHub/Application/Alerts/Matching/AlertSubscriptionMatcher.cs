@@ -32,7 +32,7 @@ public sealed class AlertSubscriptionMatcher
         // 1. Get active subscriptions.
         // 2. Filter by Severity (if specified).
         // 3. Filter by Category (if any overlap).
-        
+
         var subscriptions = await _dbContext.Subscriptions
             .Include(s => s.Categories)
             .Where(s => s.IsActive)
@@ -76,7 +76,7 @@ public sealed class AlertSubscriptionMatcher
     private bool IsSeverityMatch(string alertSeverity, string minSeverity)
     {
         // Placeholder for real severity hierarchy logic
-        return true; 
+        return true;
     }
 
     private async Task ScheduleDeliveryAsync(Guid alertId, AlertHub.Infrastructure.Persistence.Entities.Subscriptions.SubscriptionEntity sub, AlertHub.Infrastructure.Persistence.Entities.AlertInfoEntity info, CancellationToken ct)

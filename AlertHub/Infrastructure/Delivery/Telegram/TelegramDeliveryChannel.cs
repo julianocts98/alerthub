@@ -18,7 +18,7 @@ public sealed class TelegramDeliveryChannel : IAlertDeliveryChannel
     public async Task<DeliveryResult> SendAsync(DeliveryRequest request, CancellationToken ct)
     {
         _logger.LogInformation("Sending Telegram message to {Target}: {Content}", request.Target, request.Content);
-        
+
         // Simulating network delay
         await Task.Delay(100, ct);
 

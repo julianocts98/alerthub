@@ -36,8 +36,8 @@ public sealed class SubscriptionMatcherWorker : BackgroundService
         {
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
-            
-            try 
+
+            try
             {
                 // We don't know the exact type here easily because the outbox stores it as string
                 // But we know it contains an AlertId
@@ -45,7 +45,7 @@ public sealed class SubscriptionMatcherWorker : BackgroundService
                 if (doc.RootElement.TryGetProperty("AlertId", out var alertIdProp))
                 {
                     var alertId = alertIdProp.GetGuid();
-                    
+
                     using var scope = _serviceProvider.CreateScope();
                     var matcher = scope.ServiceProvider.GetRequiredService<AlertSubscriptionMatcher>();
                     await matcher.MatchAndScheduleAsync(alertId, stoppingToken);
@@ -63,7 +63,7 @@ public sealed class SubscriptionMatcherWorker : BackgroundService
         await channel.BasicConsumeAsync(queue: queueName.QueueName, autoAck: false, consumer: consumer, cancellationToken: stoppingToken);
 
         _logger.LogInformation("Subscription Matcher Worker waiting for messages.");
-        
+
         // Wait until cancelled
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }

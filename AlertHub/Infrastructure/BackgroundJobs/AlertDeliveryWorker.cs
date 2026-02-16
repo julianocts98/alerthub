@@ -75,7 +75,7 @@ public sealed class AlertDeliveryWorker : BackgroundService
                     delivery.Status = DeliveryStatus.Sent;
                     delivery.SentAtUtc = DateTimeOffset.UtcNow;
                     delivery.ExternalReference = result.ExternalReference;
-                    _logger.LogInformation("Successfully sent alert {AlertId} via {Channel} to {Target}", 
+                    _logger.LogInformation("Successfully sent alert {AlertId} via {Channel} to {Target}",
                         delivery.AlertId, delivery.Channel, delivery.Target);
                 }
                 else

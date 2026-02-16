@@ -66,7 +66,7 @@ public sealed class OutboxPublisher : BackgroundService
             try
             {
                 var body = Encoding.UTF8.GetBytes(message.Content);
-                
+
                 await channel.BasicPublishAsync(
                     exchange: "alerts-exchange",
                     routingKey: string.Empty,
