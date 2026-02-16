@@ -3,7 +3,7 @@ using AlertHub.Infrastructure.Persistence.Entities.Deliveries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace AlertHub.Api.Controllers;
+namespace AlertHub.Api.Deliveries;
 
 [ApiController]
 [Route("api/[controller]")]

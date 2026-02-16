@@ -3,7 +3,7 @@ using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Alerts.Query;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AlertHub.Api.Controllers;
+namespace AlertHub.Api.Alerts;
 
 [ApiController]
 [Route("api/alerts")]
