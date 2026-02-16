@@ -178,7 +178,7 @@
                                 <complexType>
                                     <sequence>
                                         <element name="resourceDesc" type="xs:string"/>
-                                        <element name="mimeType" type="xs:string"/>
+                                        <element name="mimeType" type="xs:string" minOccurs="0"/>
                                         <element name="size" type="xs:integer" minOccurs="0"/>
                                         <element name="uri" type="xs:anyURI" minOccurs="0"/>
                                         <element name="derefUri" type="xs:string" minOccurs="0"/>
