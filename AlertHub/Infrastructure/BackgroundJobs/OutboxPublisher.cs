@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Diagnostics;
+using AlertHub.Infrastructure.Telemetry;
 using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Entities.Outbox;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +44,7 @@ public sealed class OutboxPublisher : BackgroundService
 
     private async Task PublishOutboxMessagesAsync(CancellationToken stoppingToken)
     {
+        using var activity = TelemetryConstants.ActivitySource.StartActivity("PublishOutboxMessages");
         using var scope = _serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 

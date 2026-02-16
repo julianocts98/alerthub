@@ -56,10 +56,9 @@ public sealed class AlertSubscriptionMatcher
     private bool IsMatch(AlertHub.Infrastructure.Persistence.Entities.AlertInfoEntity info, AlertHub.Infrastructure.Persistence.Entities.Subscriptions.SubscriptionEntity sub)
     {
         // 1. Severity check
-        if (!string.IsNullOrEmpty(sub.MinSeverity))
+        if (sub.MinSeverity.HasValue)
         {
-            // Simple string comparison for now, could be enum-based weight
-            if (!IsSeverityMatch(info.Severity, sub.MinSeverity)) return false;
+            if (!IsSeverityMatch(info.Severity, sub.MinSeverity.Value)) return false;
         }
 
         // 2. Category check
@@ -73,11 +72,20 @@ public sealed class AlertSubscriptionMatcher
         return true;
     }
 
-    private bool IsSeverityMatch(string alertSeverity, string minSeverity)
+    private bool IsSeverityMatch(AlertSeverity alertSeverity, AlertSeverity minSeverity)
     {
-        // Placeholder for real severity hierarchy logic
-        return true;
+        // Severity levels: Extreme (4), Severe (3), Moderate (2), Minor (1), Unknown (0)
+        return GetSeverityWeight(alertSeverity) >= GetSeverityWeight(minSeverity);
     }
+
+    private int GetSeverityWeight(AlertSeverity severity) => severity switch
+    {
+        AlertSeverity.Extreme => 4,
+        AlertSeverity.Severe => 3,
+        AlertSeverity.Moderate => 2,
+        AlertSeverity.Minor => 1,
+        _ => 0
+    };
 
     private async Task ScheduleDeliveryAsync(Guid alertId, AlertHub.Infrastructure.Persistence.Entities.Subscriptions.SubscriptionEntity sub, AlertHub.Infrastructure.Persistence.Entities.AlertInfoEntity info, CancellationToken ct)
     {
@@ -92,7 +100,7 @@ public sealed class AlertSubscriptionMatcher
             AlertId = alertId,
             SubscriptionId = sub.Id,
             Target = sub.Target,
-            Channel = sub.Channel,
+            Channel = sub.Channel.ToString(),
             Status = DeliveryStatus.Pending,
             RetryCount = 0
         });

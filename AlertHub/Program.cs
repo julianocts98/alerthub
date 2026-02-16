@@ -1,3 +1,5 @@
+using AlertHub.Application.Alerts.Matching;
+using AlertHub.Application.Common.Delivery;
 using AlertHub.Application.Alerts;
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Alerts.Query;
@@ -6,14 +8,30 @@ using AlertHub.Application.Subscriptions;
 using AlertHub.Infrastructure.Alerts.Ingestion;
 using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Subscriptions;
-using AlertHub.Application.Alerts.Matching;
-using AlertHub.Application.Common.Delivery;
 using AlertHub.Infrastructure.BackgroundJobs;
 using AlertHub.Infrastructure.Delivery.Telegram;
 using AlertHub.Infrastructure.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// OpenTelemetry Configuration
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("AlertHub"))
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation()
+        .AddSource("AlertHub")
+        .AddConsoleExporter())
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddConsoleExporter());
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers()

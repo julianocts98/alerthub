@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Diagnostics;
+using AlertHub.Infrastructure.Telemetry;
 using AlertHub.Application.Alerts.Matching;
 using AlertHub.Application.Common.Messaging;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +25,22 @@ public sealed class SubscriptionMatcherWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await RunWorkerAsync(stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Subscription Matcher Worker connection failed. Retrying in 10 seconds...");
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            }
+        }
+    }
+
+    private async Task RunWorkerAsync(CancellationToken stoppingToken)
+    {
         var factory = new ConnectionFactory { HostName = "localhost", UserName = "alerthub", Password = "alerthub" };
         using var connection = await factory.CreateConnectionAsync(stoppingToken);
         using var channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
@@ -34,6 +52,7 @@ public sealed class SubscriptionMatcherWorker : BackgroundService
         var consumer = new AsyncEventingBasicConsumer(channel);
         consumer.ReceivedAsync += async (model, ea) =>
         {
+            using var activity = TelemetryConstants.ActivitySource.StartActivity("ProcessSubscriptionMatching");
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
 
