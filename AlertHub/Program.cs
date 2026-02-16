@@ -6,6 +6,8 @@ using AlertHub.Application.Subscriptions;
 using AlertHub.Infrastructure.Alerts.Ingestion;
 using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Subscriptions;
+using AlertHub.Application.Alerts.Matching;
+using AlertHub.Infrastructure.BackgroundJobs;
 using AlertHub.Infrastructure.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +18,11 @@ builder.Services.AddControllers()
     .AddXmlSerializerFormatters();
 builder.Services.AddProblemDetails();
 
+builder.Services.AddScoped<AlertSubscriptionMatcher>();
+
 builder.Services.AddSingleton<AuditingInterceptor>();
+builder.Services.AddHostedService<OutboxPublisher>();
+builder.Services.AddHostedService<SubscriptionMatcherWorker>();
 
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 {
