@@ -25,6 +25,8 @@ public class AlertCap12ComplianceTests
             certainty: AlertCertainty.Observed,
             categories: [AlertInfoCategory.Safety],
             areaDescriptions: []);
+
+        alert.ValidateForPublication();
     }
 
     [Fact]

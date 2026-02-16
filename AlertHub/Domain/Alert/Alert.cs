@@ -270,9 +270,6 @@ public class Alert : AggregateRoot
             if (info.Categories.Count == 0)
                 throw new DomainException(AlertDomainErrors.CategoryRequired);
 
-            if (info.Areas.Count == 0)
-                throw new DomainException(AlertDomainErrors.AreaRequired);
-
             if (info.Effective.HasValue && info.Onset.HasValue && info.Onset.Value < info.Effective.Value)
                 throw new DomainException(AlertDomainErrors.InfoOnsetBeforeEffective);
 
