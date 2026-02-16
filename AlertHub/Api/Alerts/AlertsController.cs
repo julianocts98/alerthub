@@ -39,6 +39,9 @@ public sealed class AlertsController : ControllerBase
         if (!result.IsSuccess || result.Value is null)
             return IngestionProblemDetailsMapper.ToActionResult(result.Error);
 
+        if (result.Value.WasAlreadyIngested)
+            return Ok(result.Value);
+
         return CreatedAtAction(nameof(Ingest), routeValues: null, value: result.Value);
     }
 

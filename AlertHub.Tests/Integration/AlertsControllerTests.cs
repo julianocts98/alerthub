@@ -154,4 +154,23 @@ public sealed class AlertsControllerTests : IAsyncLifetime
         Assert.Single(body!.Items);
         Assert.Equal("test-alert-001", body.Items[0].Identifier);
     }
+
+    [Fact]
+    public async Task PostIngest_DuplicateAlert_Returns200AndWasAlreadyIngestedTrue()
+    {
+        // First ingestion
+        using var content1 = new StringContent(ValidJsonAlert, Encoding.UTF8, "application/json");
+        var response1 = await _client.PostAsync("/api/alerts/ingest", content1);
+        Assert.Equal(HttpStatusCode.Created, response1.StatusCode);
+
+        // Second ingestion (duplicate)
+        using var content2 = new StringContent(ValidJsonAlert, Encoding.UTF8, "application/json");
+        var response2 = await _client.PostAsync("/api/alerts/ingest", content2);
+
+        // Assert idempotent success
+        Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
+        var body = await response2.Content.ReadFromJsonAsync<AlertIngestionResponse>();
+        Assert.NotNull(body);
+        Assert.True(body!.WasAlreadyIngested);
+    }
 }

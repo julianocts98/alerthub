@@ -18,6 +18,11 @@ public sealed class AlertRepository : IAlertRepository
         _dbContext = dbContext;
     }
 
+    public async Task<bool> ExistsAsync(string sender, string identifier, CancellationToken ct)
+    {
+        return await _dbContext.Alerts.AnyAsync(a => a.Sender == sender && a.Identifier == identifier, ct);
+    }
+
     public async Task<AlertPersistenceResult> AddAsync(
         DomainAlert alert,
         string rawPayload,

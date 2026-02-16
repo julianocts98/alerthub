@@ -58,6 +58,20 @@ public sealed class AlertIngestionService
                 domainResult.Error ?? new ResultError(IngestionErrorCodes.InvalidPayload, "Alert could not be validated."));
         }
 
+        // Idempotency check: natural key is (Sender, Identifier)
+        var exists = await _alertRepository.ExistsAsync(domainResult.Value.Sender, domainResult.Value.Identifier, ct);
+        if (exists)
+        {
+            return Result<AlertIngestionResponse>.Success(new AlertIngestionResponse
+            {
+                Id = Guid.Empty, // Or we could fetch the actual ID if we wanted to
+                Identifier = domainResult.Value.Identifier,
+                Sent = domainResult.Value.Sent,
+                IngestedAtUtc = DateTimeOffset.UtcNow,
+                WasAlreadyIngested = true
+            });
+        }
+
         var persisted = await _alertRepository.AddAsync(domainResult.Value, rawPayload, contentType, ct);
         await _unitOfWork.SaveChangesAsync(ct);
 

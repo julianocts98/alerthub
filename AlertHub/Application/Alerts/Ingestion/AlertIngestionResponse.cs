@@ -16,4 +16,6 @@ public sealed class AlertIngestionResponse
 
     [Required]
     public DateTimeOffset IngestedAtUtc { get; init; }
+
+    public bool WasAlreadyIngested { get; init; }
 }

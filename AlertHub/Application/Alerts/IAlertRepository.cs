@@ -5,6 +5,8 @@ namespace AlertHub.Application.Alerts;
 
 public interface IAlertRepository
 {
+    Task<bool> ExistsAsync(string sender, string identifier, CancellationToken ct);
+
     Task<AlertPersistenceResult> AddAsync(
         DomainAlert alert,
         string rawPayload,
