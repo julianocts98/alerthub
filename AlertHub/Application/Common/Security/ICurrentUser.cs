@@ -9,7 +9,11 @@ public interface ICurrentUser
 
 public static class Roles
 {
-    public const string Producer = "Alert.Producer";
-    public const string Consumer = "Alert.Consumer";
-    public const string Admin = "Alert.Admin";
+    public const string Admin = "admin";
+    public const string Subscriber = "subscriber";
+}
+
+public static class Scopes
+{
+    public const string AlertsIngest = "alerts:ingest";
 }

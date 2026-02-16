@@ -1,5 +1,7 @@
+using AlertHub.Application.Common.Security;
 using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Entities.Deliveries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +9,7 @@ namespace AlertHub.Api.Deliveries;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = Roles.Admin)]
 public sealed class DeliveriesController : ControllerBase
 {
     private readonly AppDbContext _dbContext;

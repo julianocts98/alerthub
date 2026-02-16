@@ -46,9 +46,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy(Roles.Producer, policy => policy.RequireRole(Roles.Producer));
-    options.AddPolicy(Roles.Consumer, policy => policy.RequireRole(Roles.Consumer));
     options.AddPolicy(Roles.Admin, policy => policy.RequireRole(Roles.Admin));
+    options.AddPolicy(Scopes.AlertsIngest, policy => policy.RequireClaim("scope", Scopes.AlertsIngest));
+    options.AddPolicy(Roles.Subscriber, policy => policy.RequireRole(Roles.Subscriber));
 });
 
 // OpenTelemetry Configuration

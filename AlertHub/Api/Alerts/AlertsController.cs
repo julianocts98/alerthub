@@ -23,7 +23,7 @@ public sealed class AlertsController : ControllerBase
     }
 
     [HttpPost("ingest")]
-    [Authorize(Policy = Roles.Producer)]
+    [Authorize(Policy = Scopes.AlertsIngest)]
     [Consumes("application/json", "application/xml")]
     [ProducesResponseType(typeof(AlertIngestionResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

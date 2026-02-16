@@ -28,6 +28,14 @@ public sealed class IdentityController : ControllerBase
             new(ClaimTypes.Role, request.Role)
         };
 
+        if (request.Scopes != null)
+        {
+            foreach (var scope in request.Scopes)
+            {
+                claims.Add(new Claim("scope", scope));
+            }
+        }
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "a_very_long_secret_key_for_development_purposes"));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -43,4 +51,4 @@ public sealed class IdentityController : ControllerBase
     }
 }
 
-public record TokenRequest(string UserId, string Role);
+public record TokenRequest(string UserId, string Role, string[]? Scopes = null);
