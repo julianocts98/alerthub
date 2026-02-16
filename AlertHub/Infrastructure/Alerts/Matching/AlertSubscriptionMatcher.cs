@@ -3,7 +3,7 @@ using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Entities.Deliveries;
 using Microsoft.EntityFrameworkCore;
 
-namespace AlertHub.Application.Alerts.Matching;
+namespace AlertHub.Infrastructure.Alerts.Matching;
 
 public sealed class AlertSubscriptionMatcher
 {
@@ -25,11 +25,6 @@ public sealed class AlertSubscriptionMatcher
 
         if (alert == null) return;
 
-        // Simple matching logic: 
-        // 1. Get active subscriptions.
-        // 2. Filter by Severity (if specified).
-        // 3. Filter by Category (if any overlap).
-
         var subscriptions = await _dbContext.Subscriptions
             .Include(s => s.Categories)
             .Where(s => s.IsActive)
@@ -41,8 +36,8 @@ public sealed class AlertSubscriptionMatcher
             {
                 if (IsMatch(info, sub))
                 {
-                    await ScheduleDeliveryAsync(alert.Id, sub, info, ct);
-                    break; // One match per alert-info-subscription trio is enough
+                    await ScheduleDeliveryAsync(alert.Id, sub.Id, sub.Target, sub.Channel.ToString(), ct);
+                    break;
                 }
             }
         }
@@ -50,32 +45,28 @@ public sealed class AlertSubscriptionMatcher
         await _dbContext.SaveChangesAsync(ct);
     }
 
-    private bool IsMatch(AlertHub.Infrastructure.Persistence.Entities.AlertInfoEntity info, AlertHub.Infrastructure.Persistence.Entities.Subscriptions.SubscriptionEntity sub)
+    private static bool IsMatch(
+        AlertHub.Infrastructure.Persistence.Entities.AlertInfoEntity info,
+        AlertHub.Infrastructure.Persistence.Entities.Subscriptions.SubscriptionEntity sub)
     {
-        // 1. Severity check
-        if (sub.MinSeverity.HasValue)
-        {
-            if (!IsSeverityMatch(info.Severity, sub.MinSeverity.Value)) return false;
-        }
+        if (sub.MinSeverity.HasValue && !IsSeverityMatch(info.Severity, sub.MinSeverity.Value))
+            return false;
 
-        // 2. Category check
         if (sub.Categories.Any())
         {
             var alertCategories = info.Categories.Select(c => c.Category).ToList();
             var subCategories = sub.Categories.Select(c => c.Category).ToList();
-            if (!alertCategories.Intersect(subCategories).Any()) return false;
+            if (!alertCategories.Intersect(subCategories).Any())
+                return false;
         }
 
         return true;
     }
 
-    private bool IsSeverityMatch(AlertSeverity alertSeverity, AlertSeverity minSeverity)
-    {
-        // Severity levels: Extreme (4), Severe (3), Moderate (2), Minor (1), Unknown (0)
-        return GetSeverityWeight(alertSeverity) >= GetSeverityWeight(minSeverity);
-    }
+    private static bool IsSeverityMatch(AlertSeverity alertSeverity, AlertSeverity minSeverity)
+        => GetSeverityWeight(alertSeverity) >= GetSeverityWeight(minSeverity);
 
-    private int GetSeverityWeight(AlertSeverity severity) => severity switch
+    private static int GetSeverityWeight(AlertSeverity severity) => severity switch
     {
         AlertSeverity.Extreme => 4,
         AlertSeverity.Severe => 3,
@@ -84,10 +75,10 @@ public sealed class AlertSubscriptionMatcher
         _ => 0
     };
 
-    private async Task ScheduleDeliveryAsync(Guid alertId, AlertHub.Infrastructure.Persistence.Entities.Subscriptions.SubscriptionEntity sub, AlertHub.Infrastructure.Persistence.Entities.AlertInfoEntity info, CancellationToken ct)
+    private async Task ScheduleDeliveryAsync(Guid alertId, Guid subscriptionId, string target, string channel, CancellationToken ct)
     {
         var alreadyScheduled = await _dbContext.AlertDeliveries
-            .AnyAsync(d => d.AlertId == alertId && d.SubscriptionId == sub.Id, ct);
+            .AnyAsync(d => d.AlertId == alertId && d.SubscriptionId == subscriptionId, ct);
 
         if (alreadyScheduled) return;
 
@@ -95,13 +86,13 @@ public sealed class AlertSubscriptionMatcher
         {
             Id = Guid.NewGuid(),
             AlertId = alertId,
-            SubscriptionId = sub.Id,
-            Target = sub.Target,
-            Channel = sub.Channel.ToString(),
+            SubscriptionId = subscriptionId,
+            Target = target,
+            Channel = channel,
             Status = DeliveryStatus.Pending,
             RetryCount = 0
         });
 
-        _logger.LogInformation("Scheduled delivery for alert {AlertId} to subscription {SubscriptionId}", alertId, sub.Id);
+        _logger.LogInformation("Scheduled delivery for alert {AlertId} to subscription {SubscriptionId}", alertId, subscriptionId);
     }
 }

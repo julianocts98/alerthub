@@ -1,16 +1,18 @@
 using System.Text;
 using AlertHub.Application.Alerts;
 using AlertHub.Application.Alerts.Ingestion;
-using AlertHub.Application.Alerts.Matching;
 using AlertHub.Application.Alerts.Query;
 using AlertHub.Application.Common;
 using AlertHub.Application.Common.Delivery;
 using AlertHub.Application.Common.Security;
+using AlertHub.Application.Deliveries;
 using AlertHub.Application.Subscriptions;
 using AlertHub.Infrastructure.Alerts.Ingestion;
+using AlertHub.Infrastructure.Alerts.Matching;
 using AlertHub.Infrastructure.BackgroundJobs;
 using AlertHub.Infrastructure.Delivery.Telegram;
 using AlertHub.Infrastructure.Persistence;
+using AlertHub.Infrastructure.Persistence.Deliveries;
 using AlertHub.Infrastructure.Persistence.Interceptors;
 using AlertHub.Infrastructure.Persistence.Subscriptions;
 using AlertHub.Infrastructure.Security;
@@ -22,6 +24,10 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var jwtIssuer = RequireSetting(builder.Configuration, "Jwt:Issuer");
+var jwtAudience = RequireSetting(builder.Configuration, "Jwt:Audience");
+var jwtKey = RequireSetting(builder.Configuration, "Jwt:Key");
 
 // Security Configuration
 builder.Services.AddHttpContextAccessor();
@@ -36,10 +42,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "a_very_long_secret_key_for_development_purposes"))
+                Encoding.UTF8.GetBytes(jwtKey))
         };
     });
 
@@ -87,7 +93,9 @@ builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 builder.Services.AddScoped<AlertFactory>();
 builder.Services.AddScoped<AlertIngestionService>();
 builder.Services.AddScoped<AlertQueryService>();
+builder.Services.AddScoped<DeliveryService>();
 builder.Services.AddScoped<IAlertRepository, AlertRepository>();
+builder.Services.AddScoped<IDeliveryRepository, DeliveryRepository>();
 builder.Services.AddScoped<ICapAlertParser, JsonCapAlertParser>();
 builder.Services.AddScoped<ICapAlertParser, XmlCapAlertParser>();
 builder.Services.AddSingleton<ICapXmlSchemaValidator, CapXmlSchemaValidator>();
@@ -112,5 +120,14 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static string RequireSetting(IConfiguration configuration, string key)
+{
+    var value = configuration[key];
+    if (!string.IsNullOrWhiteSpace(value))
+        return value;
+
+    throw new InvalidOperationException($"Missing required configuration value '{key}'.");
+}
 
 public partial class Program { }

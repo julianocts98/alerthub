@@ -1,9 +1,7 @@
 using AlertHub.Application.Common.Security;
-using AlertHub.Infrastructure.Persistence;
-using AlertHub.Infrastructure.Persistence.Entities.Deliveries;
+using AlertHub.Application.Deliveries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace AlertHub.Api.Deliveries;
 
@@ -12,52 +10,30 @@ namespace AlertHub.Api.Deliveries;
 [Authorize(Roles = Roles.Admin)]
 public sealed class DeliveriesController : ControllerBase
 {
-    private readonly AppDbContext _dbContext;
+    private readonly DeliveryService _deliveryService;
 
-    public DeliveriesController(AppDbContext dbContext)
+    public DeliveriesController(DeliveryService deliveryService)
     {
-        _dbContext = dbContext;
+        _deliveryService = deliveryService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetDeliveries([FromQuery] DeliveryStatus? status, [FromQuery] int limit = 50)
+    public async Task<IActionResult> GetDeliveries([FromQuery] DeliveryStatusFilter? status, [FromQuery] int limit = 50, CancellationToken ct = default)
     {
-        var query = _dbContext.AlertDeliveries.AsQueryable();
-
-        if (status.HasValue)
-        {
-            query = query.Where(d => d.Status == status.Value);
-        }
-
-        var deliveries = await query
-            .OrderByDescending(d => d.Id) // Assuming newer IDs are generally later
-            .Take(limit)
-            .ToListAsync();
-
+        var deliveries = await _deliveryService.GetDeliveriesAsync(status, limit, ct);
         return Ok(deliveries);
     }
 
     [HttpPost("{id:guid}/retry")]
-    public async Task<IActionResult> RetryDelivery(Guid id)
+    public async Task<IActionResult> RetryDelivery(Guid id, CancellationToken ct)
     {
-        var delivery = await _dbContext.AlertDeliveries.FindAsync(id);
-
-        if (delivery == null)
+        var result = await _deliveryService.RetryDeliveryAsync(id, ct);
+        return result switch
         {
-            return NotFound();
-        }
-
-        if (delivery.Status != DeliveryStatus.Failed)
-        {
-            return BadRequest("Only failed deliveries can be retried.");
-        }
-
-        delivery.Status = DeliveryStatus.Pending;
-        delivery.RetryCount = 0;
-        delivery.Error = null;
-
-        await _dbContext.SaveChangesAsync();
-
-        return NoContent();
+            RetryDeliveryResult.Retried => NoContent(),
+            RetryDeliveryResult.NotFound => NotFound(),
+            RetryDeliveryResult.NotFailed => BadRequest("Only failed deliveries can be retried."),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
     }
 }
