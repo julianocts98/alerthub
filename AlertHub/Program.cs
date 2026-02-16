@@ -6,6 +6,7 @@ using AlertHub.Application.Subscriptions;
 using AlertHub.Infrastructure.Alerts.Ingestion;
 using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Subscriptions;
+using AlertHub.Infrastructure.Persistence.Interceptors;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,8 +15,14 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers()
     .AddXmlSerializerFormatters();
 builder.Services.AddProblemDetails();
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddSingleton<AuditingInterceptor>();
+
+builder.Services.AddDbContext<AppDbContext>((sp, options) =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .AddInterceptors(sp.GetRequiredService<AuditingInterceptor>());
+});
 
 builder.Services.AddScoped<AlertFactory>();
 builder.Services.AddScoped<AlertIngestionService>();

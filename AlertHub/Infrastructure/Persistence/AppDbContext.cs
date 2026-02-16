@@ -51,6 +51,14 @@ public sealed class AppDbContext : DbContext, IUnitOfWork
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        // Define shadow properties for all entities at once
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            modelBuilder.Entity(entityType.Name).Property<DateTimeOffset>("CreatedAt");
+            modelBuilder.Entity(entityType.Name).Property<DateTimeOffset>("UpdatedAt");
+        }
+
         base.OnModelCreating(modelBuilder);
     }
 
