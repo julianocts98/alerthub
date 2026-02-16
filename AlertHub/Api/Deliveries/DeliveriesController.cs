@@ -18,9 +18,9 @@ public sealed class DeliveriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetDeliveries([FromQuery] DeliveryStatusFilter? status, [FromQuery] int limit = 50, CancellationToken ct = default)
+    public async Task<IActionResult> GetDeliveries([FromQuery] GetDeliveriesRequest request, CancellationToken ct = default)
     {
-        var deliveries = await _deliveryService.GetDeliveriesAsync(status, limit, ct);
+        var deliveries = await _deliveryService.GetDeliveriesAsync(request, ct);
         return Ok(deliveries);
     }
 

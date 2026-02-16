@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using AlertHub.Api.Subscriptions;
 using AlertHub.Application.Subscriptions;
 using AlertHub.Domain.Alert;
 using AlertHub.Domain.Subscriptions;
@@ -24,7 +23,7 @@ public sealed class SubscriptionsControllerTests
     public async Task CreateSubscription_WithValidRequest_ReturnsCreatedAndPersists()
     {
         // Arrange
-        var request = new CreateSubscriptionRequestDto(
+        var request = new CreateSubscriptionRequest(
             Channel: SubscriptionChannel.Email,
             Target: "test@example.com",
             MinSeverity: AlertSeverity.Extreme,
@@ -51,7 +50,7 @@ public sealed class SubscriptionsControllerTests
     public async Task CreateSubscription_WithInvalidTarget_ReturnsBadRequest()
     {
         // Arrange
-        var request = new CreateSubscriptionRequestDto(
+        var request = new CreateSubscriptionRequest(
             Channel: SubscriptionChannel.Sms,
             Target: "not-a-phone-number"
         );

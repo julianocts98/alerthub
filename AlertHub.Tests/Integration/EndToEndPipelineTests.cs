@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
-using AlertHub.Api.Subscriptions;
+using AlertHub.Application.Subscriptions;
 using AlertHub.Domain.Subscriptions;
 using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Entities.Deliveries;
@@ -30,7 +30,7 @@ public sealed class EndToEndPipelineTests
     public async Task IngestedAlert_ShouldEventuallyResultInDeliveryRecord()
     {
         // 1. Create a Subscription
-        var subRequest = new CreateSubscriptionRequestDto(
+        var subRequest = new CreateSubscriptionRequest(
             Channel: SubscriptionChannel.Telegram,
             Target: "12345678"
         );

@@ -22,21 +22,14 @@ public sealed class SubscriptionsController : ControllerBase
 
     [HttpPost]
     public async Task<ActionResult<SubscriptionResponse>> Create(
-        [FromBody] CreateSubscriptionRequestDto requestDto,
+        [FromBody] CreateSubscriptionRequest request,
         CancellationToken ct)
     {
         var userId = _currentUser.Id ?? throw new UnauthorizedAccessException();
 
-        var request = new CreateSubscriptionRequest(
-            userId,
-            requestDto.Channel,
-            requestDto.Target,
-            requestDto.MinSeverity,
-            requestDto.Categories);
-
         try
         {
-            var response = await _subscriptionService.CreateSubscriptionAsync(request, ct);
+            var response = await _subscriptionService.CreateSubscriptionAsync(request, userId, ct);
             return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
         }
         catch (DomainException ex)
@@ -60,9 +53,3 @@ public sealed class SubscriptionsController : ControllerBase
         return Ok(response);
     }
 }
-
-public record CreateSubscriptionRequestDto(
-    AlertHub.Domain.Subscriptions.SubscriptionChannel Channel,
-    string Target,
-    AlertHub.Domain.Alert.AlertSeverity? MinSeverity = null,
-    List<AlertHub.Domain.Alert.AlertInfoCategory>? Categories = null);

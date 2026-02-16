@@ -47,40 +47,9 @@ public sealed class AlertsController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(AlertPage), StatusCodes.Status200OK)]
     public async Task<ActionResult<AlertPage>> Search(
-        [FromQuery] string? sender,
-        [FromQuery] string? identifier,
-        [FromQuery] DateTimeOffset? sentFrom,
-        [FromQuery] DateTimeOffset? sentTo,
-        [FromQuery] string? status,
-        [FromQuery] string? messageType,
-        [FromQuery] string? scope,
-        [FromQuery] string? @event,
-        [FromQuery] string? urgency,
-        [FromQuery] string? severity,
-        [FromQuery] string? certainty,
-        [FromQuery] string? category,
-        [FromQuery] string? cursor = null,
-        [FromQuery] int pageSize = 50,
+        [FromQuery] AlertSearchQuery query,
         CancellationToken ct = default)
     {
-        var query = new AlertSearchQuery
-        {
-            Sender = sender,
-            Identifier = identifier,
-            SentFrom = sentFrom,
-            SentTo = sentTo,
-            Status = status,
-            MessageType = messageType,
-            Scope = scope,
-            Event = @event,
-            Urgency = urgency,
-            Severity = severity,
-            Certainty = certainty,
-            Category = category,
-            Cursor = cursor,
-            PageSize = pageSize,
-        };
-
         var page = await _queryService.SearchAsync(query, ct);
         return Ok(page);
     }

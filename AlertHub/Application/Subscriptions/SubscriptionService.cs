@@ -5,7 +5,6 @@ using AlertHub.Domain.Subscriptions;
 namespace AlertHub.Application.Subscriptions;
 
 public record CreateSubscriptionRequest(
-    string UserId,
     SubscriptionChannel Channel,
     string Target,
     AlertSeverity? MinSeverity = null,
@@ -31,10 +30,10 @@ public sealed class SubscriptionService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<SubscriptionResponse> CreateSubscriptionAsync(CreateSubscriptionRequest request, CancellationToken ct)
+    public async Task<SubscriptionResponse> CreateSubscriptionAsync(CreateSubscriptionRequest request, string userId, CancellationToken ct)
     {
         var subscription = Subscription.Create(
-            request.UserId,
+            userId,
             request.Channel,
             request.Target,
             request.MinSeverity,
