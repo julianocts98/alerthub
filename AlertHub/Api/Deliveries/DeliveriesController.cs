@@ -28,19 +28,6 @@ public sealed class DeliveriesController : ControllerBase
     [HttpPost("{id:guid}/retry")]
     public async Task<IActionResult> RetryDelivery(Guid id, CancellationToken ct)
     {
-        var result = await _deliveryService.RetryDeliveryAsync(id, ct);
-        return result switch
-        {
-            RetryDeliveryResult.Retried => NoContent(),
-            RetryDeliveryResult.NotFound => NotFound(),
-            RetryDeliveryResult.NotFailed => ApiProblemDetails.Build(
-                StatusCodes.Status400BadRequest,
-                "Invalid delivery state",
-                "Only failed deliveries can be retried."),
-            _ => ApiProblemDetails.Build(
-                StatusCodes.Status500InternalServerError,
-                "Retry failed",
-                "An unexpected delivery retry error occurred.")
-        };
+        return (await _deliveryService.RetryDeliveryAsync(id, ct)).ToActionResult();
     }
 }

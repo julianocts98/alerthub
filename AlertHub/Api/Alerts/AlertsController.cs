@@ -1,3 +1,4 @@
+using AlertHub.Api.Common;
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Alerts.Query;
 using AlertHub.Application.Common.Security;
@@ -35,13 +36,14 @@ public sealed class AlertsController : ControllerBase
 
         var contentType = Request.ContentType ?? string.Empty;
         var result = await _ingestService.ExecuteAsync(rawPayload, contentType, ct);
-        if (!result.IsSuccess || result.Value is null)
-            return IngestionProblemDetailsMapper.ToActionResult(result.Error);
 
-        if (result.Value.WasAlreadyIngested)
-            return Ok(result.Value);
+        return result.ToActionResult(value =>
+        {
+            if (value!.WasAlreadyIngested)
+                return Ok(value);
 
-        return CreatedAtAction(nameof(Ingest), routeValues: null, value: result.Value);
+            return CreatedAtAction(nameof(Ingest), routeValues: null, value: value);
+        });
     }
 
     [HttpGet]

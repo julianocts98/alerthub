@@ -1,7 +1,6 @@
 using AlertHub.Api.Common;
 using AlertHub.Application.Common.Security;
 using AlertHub.Application.Subscriptions;
-using AlertHub.Domain.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,7 +21,7 @@ public sealed class SubscriptionsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<SubscriptionResponse>> Create(
+    public async Task<IActionResult> Create(
         [FromBody] CreateSubscriptionRequest request,
         CancellationToken ct)
     {
@@ -35,27 +34,14 @@ public sealed class SubscriptionsController : ControllerBase
                 "Authenticated user context is missing.");
         }
 
-        try
-        {
-            var response = await _subscriptionService.CreateSubscriptionAsync(request, userId, ct);
-            return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
-        }
-        catch (DomainException ex)
-        {
-            return ApiProblemDetails.Build(
-                StatusCodes.Status400BadRequest,
-                "Validation error",
-                ex.Message);
-        }
+        var result = await _subscriptionService.CreateSubscriptionAsync(request, userId, ct);
+        return result.ToActionResult(response =>
+            CreatedAtAction(nameof(GetById), new { id = response!.Id }, response));
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<SubscriptionResponse>> GetById(Guid id, CancellationToken ct)
+    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var response = await _subscriptionService.GetByIdAsync(id, ct);
-        if (response is null)
-            return NotFound();
-
-        return Ok(response);
+        return (await _subscriptionService.GetByIdAsync(id, ct)).ToActionResult();
     }
 }

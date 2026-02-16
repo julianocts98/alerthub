@@ -1,6 +1,6 @@
 using System.Xml.Serialization;
-using AlertHub.Infrastructure.Alerts.Ingestion.Transport;
 using AlertHub.Domain.Alert;
+using AlertHub.Infrastructure.Alerts.Ingestion.Transport;
 
 namespace AlertHub.Tests.Application.Alerts.Ingestion;
 

@@ -3,15 +3,14 @@ using System.Security.Claims;
 using System.Text;
 using AlertHub.Application.Common;
 using AlertHub.Application.Common.Security;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AlertHub.Application.Identity;
 
 public static class IdentityErrorCodes
 {
-    public const string IssuerKeyNotConfigured = "identity.issuer_key.not_configured";
-    public const string InvalidIssuerKey = "identity.issuer_key.invalid";
+    public const string IssuerKeyNotConfigured = "identity.issuer_key.not_found";
+    public const string InvalidIssuerKey = "identity.issuer_key.unauthorized";
     public const string InvalidRole = "identity.role.invalid";
     public const string InvalidScope = "identity.scope.invalid";
 }

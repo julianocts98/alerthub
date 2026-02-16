@@ -20,50 +20,9 @@ public sealed class IdentityController : ControllerBase
     public IActionResult GenerateToken([FromBody] TokenRequest request)
     {
         var providedDemoKey = Request.Headers[DemoIssuerHeaderName].FirstOrDefault();
-        var result = _identityService.IssueToken(
+        return _identityService.IssueToken(
             new IssueTokenCommand(request.UserId, request.Role, request.Scopes),
-            providedDemoKey);
-
-        if (!result.IsSuccess || result.Value is null)
-            return MapError(result.Error);
-
-        return Ok(new { token = result.Value.Value });
-    }
-
-    private IActionResult MapError(Application.Common.ResultError? error)
-    {
-        if (error?.Code == IdentityErrorCodes.IssuerKeyNotConfigured)
-            return ApiProblemDetails.Build(
-                StatusCodes.Status404NotFound,
-                "Identity issuer key is missing",
-                error.Message);
-
-        if (error?.Code == IdentityErrorCodes.InvalidIssuerKey)
-            return ApiProblemDetails.Build(
-                StatusCodes.Status401Unauthorized,
-                "Unauthorized",
-                error.Message);
-
-        if (error?.Code == IdentityErrorCodes.InvalidRole)
-        {
-            return ApiProblemDetails.Build(
-                StatusCodes.Status400BadRequest,
-                "Invalid role",
-                error.Message);
-        }
-
-        if (error?.Code == IdentityErrorCodes.InvalidScope)
-        {
-            return ApiProblemDetails.Build(
-                StatusCodes.Status400BadRequest,
-                "Invalid scope",
-                error.Message);
-        }
-
-        return ApiProblemDetails.Build(
-            StatusCodes.Status400BadRequest,
-            "Token generation failed",
-            error?.Message ?? "Unexpected error.");
+            providedDemoKey).ToActionResult(token => Ok(new { token = token!.Value }));
     }
 }
 

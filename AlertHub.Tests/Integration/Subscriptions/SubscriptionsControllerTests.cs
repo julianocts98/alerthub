@@ -6,7 +6,6 @@ using AlertHub.Application.Common.Security;
 using AlertHub.Application.Subscriptions;
 using AlertHub.Domain.Alert;
 using AlertHub.Domain.Subscriptions;
-using AlertHub.Tests.Integration.Helpers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.TestHost;
@@ -70,7 +69,7 @@ public sealed class SubscriptionsControllerTests
         var response = await _client.PostAsJsonAsync("/api/subscriptions", request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
 
     [Fact]
