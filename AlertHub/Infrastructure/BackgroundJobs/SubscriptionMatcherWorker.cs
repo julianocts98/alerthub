@@ -3,6 +3,7 @@ using System.Diagnostics;
 using AlertHub.Infrastructure.Telemetry;
 using AlertHub.Application.Alerts.Matching;
 using AlertHub.Application.Common.Messaging;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -16,11 +17,13 @@ public sealed class SubscriptionMatcherWorker : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<SubscriptionMatcherWorker> _logger;
+    private readonly IConfiguration _configuration;
 
-    public SubscriptionMatcherWorker(IServiceProvider serviceProvider, ILogger<SubscriptionMatcherWorker> logger)
+    public SubscriptionMatcherWorker(IServiceProvider serviceProvider, ILogger<SubscriptionMatcherWorker> logger, IConfiguration configuration)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _configuration = configuration;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -41,7 +44,13 @@ public sealed class SubscriptionMatcherWorker : BackgroundService
 
     private async Task RunWorkerAsync(CancellationToken stoppingToken)
     {
-        var factory = new ConnectionFactory { HostName = "localhost", UserName = "alerthub", Password = "alerthub" };
+        var factory = new ConnectionFactory
+        {
+            HostName = _configuration["RabbitMQ:HostName"] ?? "localhost",
+            Port = int.Parse(_configuration["RabbitMQ:Port"] ?? "5672"),
+            UserName = _configuration["RabbitMQ:UserName"] ?? "alerthub",
+            Password = _configuration["RabbitMQ:Password"] ?? "alerthub"
+        };
         using var connection = await factory.CreateConnectionAsync(stoppingToken);
         using var channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
 

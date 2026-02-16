@@ -8,17 +8,21 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using Microsoft.Extensions.Configuration;
+
 namespace AlertHub.Infrastructure.BackgroundJobs;
 
 public sealed class AlertDeliveryWorker : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<AlertDeliveryWorker> _logger;
+    private readonly IConfiguration _configuration;
 
-    public AlertDeliveryWorker(IServiceProvider serviceProvider, ILogger<AlertDeliveryWorker> logger)
+    public AlertDeliveryWorker(IServiceProvider serviceProvider, ILogger<AlertDeliveryWorker> logger, IConfiguration configuration)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _configuration = configuration;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -36,7 +40,8 @@ public sealed class AlertDeliveryWorker : BackgroundService
                 _logger.LogError(ex, "Error occurred while processing alert deliveries.");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            var delayMs = int.Parse(_configuration["BackgroundJobs:DeliveryIntervalMs"] ?? "5000");
+            await Task.Delay(TimeSpan.FromMilliseconds(delayMs), stoppingToken);
         }
     }
 

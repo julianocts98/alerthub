@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using System.Text;
 
@@ -16,11 +17,13 @@ public sealed class OutboxPublisher : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<OutboxPublisher> _logger;
+    private readonly IConfiguration _configuration;
 
-    public OutboxPublisher(IServiceProvider serviceProvider, ILogger<OutboxPublisher> logger)
+    public OutboxPublisher(IServiceProvider serviceProvider, ILogger<OutboxPublisher> logger, IConfiguration configuration)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _configuration = configuration;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -38,7 +41,8 @@ public sealed class OutboxPublisher : BackgroundService
                 _logger.LogError(ex, "Error occurred while publishing outbox messages.");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            var delayMs = int.Parse(_configuration["BackgroundJobs:OutboxIntervalMs"] ?? "5000");
+            await Task.Delay(TimeSpan.FromMilliseconds(delayMs), stoppingToken);
         }
     }
 
@@ -56,9 +60,13 @@ public sealed class OutboxPublisher : BackgroundService
 
         if (messages.Count == 0) return;
 
-        // In a real app, we'd use a dedicated RabbitMQ service/connection pool
-        // For simplicity, we create a connection here
-        var factory = new ConnectionFactory { HostName = "localhost", UserName = "alerthub", Password = "alerthub" };
+        var factory = new ConnectionFactory
+        {
+            HostName = _configuration["RabbitMQ:HostName"] ?? "localhost",
+            Port = int.Parse(_configuration["RabbitMQ:Port"] ?? "5672"),
+            UserName = _configuration["RabbitMQ:UserName"] ?? "alerthub",
+            Password = _configuration["RabbitMQ:Password"] ?? "alerthub"
+        };
         using var connection = await factory.CreateConnectionAsync(stoppingToken);
         using var channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
