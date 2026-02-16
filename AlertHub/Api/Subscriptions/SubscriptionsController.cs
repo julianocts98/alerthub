@@ -1,25 +1,39 @@
+using AlertHub.Application.Common.Security;
 using AlertHub.Application.Subscriptions;
 using AlertHub.Domain.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AlertHub.Api.Subscriptions;
 
 [ApiController]
 [Route("api/subscriptions")]
+[Authorize]
 public sealed class SubscriptionsController : ControllerBase
 {
     private readonly SubscriptionService _subscriptionService;
+    private readonly ICurrentUser _currentUser;
 
-    public SubscriptionsController(SubscriptionService subscriptionService)
+    public SubscriptionsController(SubscriptionService subscriptionService, ICurrentUser currentUser)
     {
         _subscriptionService = subscriptionService;
+        _currentUser = currentUser;
     }
 
     [HttpPost]
     public async Task<ActionResult<SubscriptionResponse>> Create(
-        [FromBody] CreateSubscriptionRequest request,
+        [FromBody] CreateSubscriptionRequestDto requestDto,
         CancellationToken ct)
     {
+        var userId = _currentUser.Id ?? throw new UnauthorizedAccessException();
+        
+        var request = new CreateSubscriptionRequest(
+            userId,
+            requestDto.Channel,
+            requestDto.Target,
+            requestDto.MinSeverity,
+            requestDto.Categories);
+
         try
         {
             var response = await _subscriptionService.CreateSubscriptionAsync(request, ct);
@@ -44,3 +58,9 @@ public sealed class SubscriptionsController : ControllerBase
         return Ok();
     }
 }
+
+public record CreateSubscriptionRequestDto(
+    AlertHub.Domain.Subscriptions.SubscriptionChannel Channel,
+    string Target,
+    AlertHub.Domain.Alert.AlertSeverity? MinSeverity = null,
+    List<AlertHub.Domain.Alert.AlertInfoCategory>? Categories = null);

@@ -1,6 +1,8 @@
 using AlertHub.Api.Alerts;
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Alerts.Query;
+using AlertHub.Application.Common.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AlertHub.Api.Alerts;
@@ -8,6 +10,7 @@ namespace AlertHub.Api.Alerts;
 [ApiController]
 [Route("api/alerts")]
 [Produces("application/json")]
+[Authorize]
 public sealed class AlertsController : ControllerBase
 {
     private readonly AlertIngestionService _ingestService;
@@ -20,6 +23,7 @@ public sealed class AlertsController : ControllerBase
     }
 
     [HttpPost("ingest")]
+    [Authorize(Policy = Roles.Producer)]
     [Consumes("application/json", "application/xml")]
     [ProducesResponseType(typeof(AlertIngestionResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

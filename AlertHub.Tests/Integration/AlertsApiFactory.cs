@@ -1,6 +1,9 @@
 using AlertHub.Infrastructure.Persistence;
+using AlertHub.Tests.Integration.Helpers;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,8 +24,18 @@ public sealed class AlertsApiFactory : WebApplicationFactory<Program>
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:DefaultConnection"] = _fixture.ConnectionString
+                ["ConnectionStrings:DefaultConnection"] = _fixture.ConnectionString,
+                ["Jwt:Issuer"] = "AlertHub",
+                ["Jwt:Audience"] = "AlertHub",
+                ["Jwt:Key"] = "a_very_long_secret_key_for_development_purposes"
             });
+        });
+
+        builder.ConfigureTestServices(services =>
+        {
+            services.AddAuthentication(TestAuthHandler.AuthenticationScheme)
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
+                    TestAuthHandler.AuthenticationScheme, _ => { });
         });
     }
 
