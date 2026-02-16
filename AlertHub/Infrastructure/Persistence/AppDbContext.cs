@@ -2,6 +2,7 @@ using System.Text.Json;
 using AlertHub.Application.Common;
 using AlertHub.Domain.Common;
 using AlertHub.Infrastructure.Persistence.Entities;
+using AlertHub.Infrastructure.Persistence.Entities.Deliveries;
 using AlertHub.Infrastructure.Persistence.Entities.Outbox;
 using AlertHub.Infrastructure.Persistence.Entities.Subscriptions;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +40,8 @@ public sealed class AppDbContext : DbContext, IUnitOfWork
     public DbSet<SubscriptionEntity> Subscriptions => Set<SubscriptionEntity>();
 
     public DbSet<SubscriptionCategoryEntity> SubscriptionCategories => Set<SubscriptionCategoryEntity>();
+
+    public DbSet<AlertDeliveryEntity> AlertDeliveries => Set<AlertDeliveryEntity>();
 
     public DbSet<OutboxMessageEntity> OutboxMessages => Set<OutboxMessageEntity>();
 
