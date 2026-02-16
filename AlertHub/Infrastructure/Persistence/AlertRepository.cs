@@ -62,6 +62,7 @@ public sealed class AlertRepository : IAlertRepository
 
         var q = _dbContext.Alerts
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(a => a.Infos)
                 .ThenInclude(i => i.Categories)
             .AsQueryable();
