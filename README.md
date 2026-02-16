@@ -236,7 +236,6 @@ Test suite includes:
 - domain unit tests
 - application tests
 - integration tests with PostgreSQL/RabbitMQ containers
-- architecture guard test preventing `Application` from referencing `Infrastructure` namespaces
 
 Integration tests use Testcontainers fixtures in:
 - `AlertHub.Tests/Integration/PostgresContainerFixture.cs`
