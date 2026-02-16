@@ -1,9 +1,18 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
+using AlertHub.Application.Common.Security;
 using AlertHub.Application.Subscriptions;
 using AlertHub.Domain.Alert;
 using AlertHub.Domain.Subscriptions;
+using AlertHub.Tests.Integration.Helpers;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace AlertHub.Tests.Integration.Subscriptions;
 
@@ -11,9 +20,11 @@ namespace AlertHub.Tests.Integration.Subscriptions;
 public sealed class SubscriptionsControllerTests
 {
     private readonly HttpClient _client;
+    private readonly PostgresContainerFixture _fixture;
 
     public SubscriptionsControllerTests(PostgresContainerFixture fixture)
     {
+        _fixture = fixture;
         _client = fixture.Factory.CreateClient();
         _client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue(Helpers.TestAuthHandler.AuthenticationScheme);
@@ -60,5 +71,58 @@ public sealed class SubscriptionsControllerTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateSubscription_WithMissingUserIdClaim_ReturnsUnauthorized()
+    {
+        var factory = _fixture.Factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddAuthentication(MissingUserIdAuthHandler.AuthenticationScheme)
+                    .AddScheme<AuthenticationSchemeOptions, MissingUserIdAuthHandler>(
+                        MissingUserIdAuthHandler.AuthenticationScheme, _ => { });
+            });
+        });
+
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue(MissingUserIdAuthHandler.AuthenticationScheme);
+
+        var request = new CreateSubscriptionRequest(
+            Channel: SubscriptionChannel.Email,
+            Target: "test@example.com");
+
+        var response = await client.PostAsJsonAsync("/api/subscriptions", request);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    private sealed class MissingUserIdAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+    {
+        public const string AuthenticationScheme = "MissingUserIdScheme";
+
+        public MissingUserIdAuthHandler(
+            IOptionsMonitor<AuthenticationSchemeOptions> options,
+            ILoggerFactory logger,
+            UrlEncoder encoder) : base(options, logger, encoder)
+        {
+        }
+
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, "Test User"),
+                new Claim(ClaimTypes.Role, Roles.Admin),
+                new Claim(ClaimTypes.Role, Roles.Subscriber),
+                new Claim("scope", Scopes.AlertsIngest)
+            };
+
+            var identity = new ClaimsIdentity(claims, AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+            var ticket = new AuthenticationTicket(principal, AuthenticationScheme);
+            return Task.FromResult(AuthenticateResult.Success(ticket));
+        }
     }
 }

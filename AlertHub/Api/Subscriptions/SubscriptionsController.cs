@@ -25,7 +25,9 @@ public sealed class SubscriptionsController : ControllerBase
         [FromBody] CreateSubscriptionRequest request,
         CancellationToken ct)
     {
-        var userId = _currentUser.Id ?? throw new UnauthorizedAccessException();
+        var userId = _currentUser.Id;
+        if (string.IsNullOrWhiteSpace(userId))
+            return Unauthorized();
 
         try
         {
