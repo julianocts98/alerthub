@@ -250,3 +250,8 @@ Security integration checks include:
 - identity endpoint is intentionally demo-focused (header-protected token minting)
 - delivery channel set is minimal (Telegram)
 - retry/backoff and observability are basic but functional
+
+## Standards reference
+
+- CAP 1.2 standard (OASIS): https://www.oasis-open.org/standard/cap/
+- The XSD used by this project for XML validation (`AlertHub/Infrastructure/Alerts/Ingestion/Schemas/cap1_2.xsd`) was sourced from the CAP 1.2 specification resources above.
