@@ -1,5 +1,11 @@
 <!-- Copyright OASIS Open 2010 All Rights Reserved -->
-<schema targetNamespace="urn:oasis:names:tc:emergency:cap:1.2" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.2">
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:cap="urn:oasis:names:tc:emergency:cap:1.2"
+        targetNamespace="urn:oasis:names:tc:emergency:cap:1.2"
+        elementFormDefault="qualified"
+        attributeFormDefault="unqualified"
+        version="1.2">
     <element name="alert">
         <annotation>
             <documentation>CAP Alert Message (version 1.2)</documentation>
