@@ -104,6 +104,10 @@ In `Development`, OpenAPI is exposed at:
 
 The repository includes a multi-stage `Dockerfile` that builds the API with .NET SDK and runs it on a chiseled (distroless-style) ASP.NET runtime image.
 
+Current base image tags used by `Dockerfile`:
+- `mcr.microsoft.com/dotnet/sdk:10.0` (build stage)
+- `mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled` (runtime stage)
+
 ### 1. Build the API image
 
 ```bash
@@ -139,6 +143,7 @@ docker run --rm \
   -e Jwt__Key="a_very_long_secret_key_for_development_purposes" \
   -e Identity__IssuerApiKey="change-this-demo-issuer-key" \
   -e Database__ApplyMigrationsOnStartup="true" \
+  -e ASPNETCORE_ENVIRONMENT="Development" \
   alerthub-api:local
 ```
 
@@ -187,6 +192,15 @@ Use returned token:
 -H "Authorization: Bearer <TOKEN>"
 ```
 
+### Quick auth sanity checks
+
+Missing or invalid JWT should return `401 Unauthorized`:
+
+```bash
+curl -i "http://localhost:5082/api/alerts"
+curl -i "http://localhost:5082/api/alerts" -H "Authorization: Bearer invalid-token"
+```
+
 ## Example: ingest an alert
 
 ```bash
@@ -206,6 +220,8 @@ Important keys:
 - `Jwt:Audience`
 - `Jwt:Key`
 - `Identity:IssuerApiKey`
+- `Database:ApplyMigrationsOnStartup` (`true` to auto-apply EF migrations at startup)
+- `ASPNETCORE_ENVIRONMENT` (`Development` if you want OpenAPI endpoint enabled)
 - `RabbitMQ:HostName` / `Port` / `UserName` / `Password` (workers have localhost defaults)
 - `Telegram:BotToken` (optional, but required for real Telegram delivery success)
 - `BackgroundJobs:OutboxIntervalMs` / `DeliveryIntervalMs` (optional tuning)
@@ -221,6 +237,13 @@ Test suite includes:
 - application tests
 - integration tests with PostgreSQL/RabbitMQ containers
 - architecture guard test preventing `Application` from referencing `Infrastructure` namespaces
+
+Integration tests use Testcontainers fixtures in:
+- `AlertHub.Tests/Integration/PostgresContainerFixture.cs`
+- `AlertHub.Tests/Integration/AlertsApiFactory.cs`
+
+Security integration checks include:
+- `AlertHub.Tests/Integration/SecurityTests.cs` (`GetAlerts_WithoutAuth_Returns401`)
 
 ## Demo limitations
 
