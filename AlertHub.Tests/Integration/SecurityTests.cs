@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -54,5 +55,36 @@ public sealed class SecurityTests : IClassFixture<PostgresContainerFixture>
     {
         var response = await _client.GetAsync("/api/deliveries");
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task GenerateToken_WithoutDemoIssuerHeader_Returns401()
+    {
+        var response = await _client.PostAsJsonAsync("/api/identity/token", new
+        {
+            userId = "demo-user",
+            role = "admin",
+            scopes = new[] { "alerts:ingest" }
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task GenerateToken_WithInvalidRole_Returns400()
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/identity/token")
+        {
+            Content = JsonContent.Create(new
+            {
+                userId = "demo-user",
+                role = "super-admin",
+                scopes = new[] { "alerts:ingest" }
+            })
+        };
+        request.Headers.Add("X-Demo-Issuer-Key", "change-this-demo-issuer-key");
+
+        var response = await _client.SendAsync(request);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }
