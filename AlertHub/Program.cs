@@ -6,6 +6,7 @@ using AlertHub.Application.Common;
 using AlertHub.Application.Common.Delivery;
 using AlertHub.Application.Common.Security;
 using AlertHub.Application.Deliveries;
+using AlertHub.Application.Identity;
 using AlertHub.Application.Subscriptions;
 using AlertHub.Infrastructure.Alerts.Ingestion;
 using AlertHub.Infrastructure.Alerts.Matching;
@@ -102,6 +103,7 @@ builder.Services.AddSingleton<ICapXmlSchemaValidator, CapXmlSchemaValidator>();
 
 builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
 builder.Services.AddScoped<SubscriptionService>();
+builder.Services.AddScoped<IdentityService>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 
 var app = builder.Build();

@@ -1,9 +1,5 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using AlertHub.Application.Common.Security;
+using AlertHub.Application.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace AlertHub.Api.Identity;
 
@@ -12,78 +8,62 @@ namespace AlertHub.Api.Identity;
 public sealed class IdentityController : ControllerBase
 {
     private const string DemoIssuerHeaderName = "X-Demo-Issuer-Key";
-    private readonly IConfiguration _configuration;
+    private readonly IdentityService _identityService;
 
-    public IdentityController(IConfiguration configuration)
+    public IdentityController(IdentityService identityService)
     {
-        _configuration = configuration;
+        _identityService = identityService;
     }
 
     [HttpPost("token")]
     public IActionResult GenerateToken([FromBody] TokenRequest request)
     {
-        var configuredDemoKey = _configuration["Identity:IssuerApiKey"];
-        if (string.IsNullOrWhiteSpace(configuredDemoKey))
+        var providedDemoKey = Request.Headers[DemoIssuerHeaderName].FirstOrDefault();
+        var result = _identityService.IssueToken(
+            new IssueTokenCommand(request.UserId, request.Role, request.Scopes),
+            providedDemoKey);
+
+        if (!result.IsSuccess || result.Value is null)
+            return MapError(result.Error);
+
+        return Ok(new { token = result.Value.Value });
+    }
+
+    private IActionResult MapError(Application.Common.ResultError? error)
+    {
+        if (error?.Code == IdentityErrorCodes.IssuerKeyNotConfigured)
             return NotFound();
 
-        var providedDemoKey = Request.Headers[DemoIssuerHeaderName].FirstOrDefault();
-        if (!string.Equals(configuredDemoKey, providedDemoKey, StringComparison.Ordinal))
+        if (error?.Code == IdentityErrorCodes.InvalidIssuerKey)
             return Unauthorized();
 
-        if (!IsSupportedRole(request.Role))
-            return BadRequest(new ProblemDetails { Title = "Invalid role", Detail = "Role is not supported.", Status = StatusCodes.Status400BadRequest });
-
-        var requestedScopes = request.Scopes ?? [];
-        if (requestedScopes.Any(scope => !IsSupportedScope(scope)))
-            return BadRequest(new ProblemDetails { Title = "Invalid scope", Detail = "One or more scopes are not supported.", Status = StatusCodes.Status400BadRequest });
-
-        var claims = new List<Claim>
+        if (error?.Code == IdentityErrorCodes.InvalidRole)
         {
-            new(JwtRegisteredClaimNames.Sub, request.UserId),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Role, request.Role)
-        };
-
-        if (request.Scopes != null)
-        {
-            foreach (var scope in request.Scopes)
+            return BadRequest(new ProblemDetails
             {
-                claims.Add(new Claim("scope", scope));
-            }
+                Title = "Invalid role",
+                Detail = error.Message,
+                Status = StatusCodes.Status400BadRequest
+            });
         }
 
-        var jwtIssuer = RequireSetting("Jwt:Issuer");
-        var jwtAudience = RequireSetting("Jwt:Audience");
-        var jwtKey = RequireSetting("Jwt:Key");
+        if (error?.Code == IdentityErrorCodes.InvalidScope)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid scope",
+                Detail = error.Message,
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(
-            issuer: jwtIssuer,
-            audience: jwtAudience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(2),
-            signingCredentials: creds
-        );
-
-        return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
+        return BadRequest(new ProblemDetails
+        {
+            Title = "Token generation failed",
+            Detail = error?.Message ?? "Unexpected error.",
+            Status = StatusCodes.Status400BadRequest
+        });
     }
-
-    private string RequireSetting(string key)
-    {
-        var value = _configuration[key];
-        if (!string.IsNullOrWhiteSpace(value))
-            return value;
-
-        throw new InvalidOperationException($"Missing required configuration value '{key}'.");
-    }
-
-    private static bool IsSupportedRole(string role)
-        => role is Roles.Admin or Roles.Subscriber;
-
-    private static bool IsSupportedScope(string scope)
-        => scope is Scopes.AlertsIngest;
 }
 
 public record TokenRequest(string UserId, string Role, string[]? Scopes = null);
