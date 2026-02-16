@@ -1,8 +1,10 @@
 using AlertHub.Application.Alerts;
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Alerts.Query;
+using AlertHub.Application.Subscriptions;
 using AlertHub.Infrastructure.Alerts.Ingestion;
 using AlertHub.Infrastructure.Persistence;
+using AlertHub.Infrastructure.Persistence.Subscriptions;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +23,9 @@ builder.Services.AddScoped<IAlertRepository, AlertRepository>();
 builder.Services.AddScoped<ICapAlertParser, JsonCapAlertParser>();
 builder.Services.AddScoped<ICapAlertParser, XmlCapAlertParser>();
 builder.Services.AddSingleton<ICapXmlSchemaValidator, CapXmlSchemaValidator>();
+
+builder.Services.AddScoped<SubscriptionService>();
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 
 var app = builder.Build();
 

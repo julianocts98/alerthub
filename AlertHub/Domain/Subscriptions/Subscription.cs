@@ -34,6 +34,20 @@ public sealed class Subscription
         IsActive = isActive;
     }
 
+    internal Subscription(
+        Guid id,
+        string userId,
+        SubscriptionChannel channel,
+        string target,
+        bool isActive,
+        AlertSeverity? minSeverity,
+        IEnumerable<AlertInfoCategory> categories)
+        : this(id, userId, channel, target, isActive)
+    {
+        MinSeverity = minSeverity;
+        _categories.AddRange(categories);
+    }
+
     public static Subscription Create(
         string userId,
         SubscriptionChannel channel,
