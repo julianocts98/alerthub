@@ -12,6 +12,7 @@ using AlertHub.Infrastructure.Alerts.Ingestion;
 using AlertHub.Infrastructure.Alerts.Matching;
 using AlertHub.Infrastructure.BackgroundJobs;
 using AlertHub.Infrastructure.Delivery.Telegram;
+using AlertHub.Infrastructure.ErrorHandling;
 using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Deliveries;
 using AlertHub.Infrastructure.Persistence.Interceptors;
@@ -76,6 +77,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers()
     .AddXmlSerializerFormatters();
 builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddScoped<AlertSubscriptionMatcher>();
 builder.Services.AddScoped<IAlertDeliveryChannel, TelegramDeliveryChannel>();
