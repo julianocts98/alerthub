@@ -1,3 +1,4 @@
+using AlertHub.Api.Common;
 using AlertHub.Application.Common.Security;
 using AlertHub.Application.Deliveries;
 using Microsoft.AspNetCore.Authorization;
@@ -32,8 +33,14 @@ public sealed class DeliveriesController : ControllerBase
         {
             RetryDeliveryResult.Retried => NoContent(),
             RetryDeliveryResult.NotFound => NotFound(),
-            RetryDeliveryResult.NotFailed => BadRequest("Only failed deliveries can be retried."),
-            _ => StatusCode(StatusCodes.Status500InternalServerError)
+            RetryDeliveryResult.NotFailed => ApiProblemDetails.Build(
+                StatusCodes.Status400BadRequest,
+                "Invalid delivery state",
+                "Only failed deliveries can be retried."),
+            _ => ApiProblemDetails.Build(
+                StatusCodes.Status500InternalServerError,
+                "Retry failed",
+                "An unexpected delivery retry error occurred.")
         };
     }
 }

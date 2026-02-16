@@ -1,3 +1,4 @@
+using AlertHub.Api.Common;
 using AlertHub.Application.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,37 +33,37 @@ public sealed class IdentityController : ControllerBase
     private IActionResult MapError(Application.Common.ResultError? error)
     {
         if (error?.Code == IdentityErrorCodes.IssuerKeyNotConfigured)
-            return NotFound();
+            return ApiProblemDetails.Build(
+                StatusCodes.Status404NotFound,
+                "Identity issuer key is missing",
+                error.Message);
 
         if (error?.Code == IdentityErrorCodes.InvalidIssuerKey)
-            return Unauthorized();
+            return ApiProblemDetails.Build(
+                StatusCodes.Status401Unauthorized,
+                "Unauthorized",
+                error.Message);
 
         if (error?.Code == IdentityErrorCodes.InvalidRole)
         {
-            return BadRequest(new ProblemDetails
-            {
-                Title = "Invalid role",
-                Detail = error.Message,
-                Status = StatusCodes.Status400BadRequest
-            });
+            return ApiProblemDetails.Build(
+                StatusCodes.Status400BadRequest,
+                "Invalid role",
+                error.Message);
         }
 
         if (error?.Code == IdentityErrorCodes.InvalidScope)
         {
-            return BadRequest(new ProblemDetails
-            {
-                Title = "Invalid scope",
-                Detail = error.Message,
-                Status = StatusCodes.Status400BadRequest
-            });
+            return ApiProblemDetails.Build(
+                StatusCodes.Status400BadRequest,
+                "Invalid scope",
+                error.Message);
         }
 
-        return BadRequest(new ProblemDetails
-        {
-            Title = "Token generation failed",
-            Detail = error?.Message ?? "Unexpected error.",
-            Status = StatusCodes.Status400BadRequest
-        });
+        return ApiProblemDetails.Build(
+            StatusCodes.Status400BadRequest,
+            "Token generation failed",
+            error?.Message ?? "Unexpected error.");
     }
 }
 

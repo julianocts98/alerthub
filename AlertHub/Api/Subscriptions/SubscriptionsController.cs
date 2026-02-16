@@ -1,3 +1,4 @@
+using AlertHub.Api.Common;
 using AlertHub.Application.Common.Security;
 using AlertHub.Application.Subscriptions;
 using AlertHub.Domain.Common;
@@ -27,7 +28,12 @@ public sealed class SubscriptionsController : ControllerBase
     {
         var userId = _currentUser.Id;
         if (string.IsNullOrWhiteSpace(userId))
-            return Unauthorized();
+        {
+            return ApiProblemDetails.Build(
+                StatusCodes.Status401Unauthorized,
+                "Unauthorized",
+                "Authenticated user context is missing.");
+        }
 
         try
         {
@@ -36,12 +42,10 @@ public sealed class SubscriptionsController : ControllerBase
         }
         catch (DomainException ex)
         {
-            return BadRequest(new ProblemDetails
-            {
-                Title = "Validation Error",
-                Detail = ex.Message,
-                Status = StatusCodes.Status400BadRequest
-            });
+            return ApiProblemDetails.Build(
+                StatusCodes.Status400BadRequest,
+                "Validation error",
+                ex.Message);
         }
     }
 
