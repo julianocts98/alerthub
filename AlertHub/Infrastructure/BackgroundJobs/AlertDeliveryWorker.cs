@@ -46,15 +46,31 @@ public sealed class AlertDeliveryWorker : BackgroundService
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var deliveryChannels = scope.ServiceProvider.GetServices<IAlertDeliveryChannel>();
 
-        var pendingDeliveries = await dbContext.AlertDeliveries
+        var candidateIds = await dbContext.AlertDeliveries
+            .AsNoTracking()
             .Where(d => d.Status == DeliveryStatus.Pending && d.RetryCount < 3)
+            .OrderBy(d => EF.Property<DateTimeOffset>(d, "CreatedAt"))
+            .Select(d => d.Id)
             .Take(10)
             .ToListAsync(stoppingToken);
 
-        if (pendingDeliveries.Count == 0) return;
+        if (candidateIds.Count == 0) return;
 
-        foreach (var delivery in pendingDeliveries)
+        foreach (var deliveryId in candidateIds)
         {
+            var claimedRows = await dbContext.AlertDeliveries
+                .Where(d => d.Id == deliveryId && d.Status == DeliveryStatus.Pending && d.RetryCount < 3)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(d => d.Status, DeliveryStatus.Processing)
+                    .SetProperty(d => d.Error, (string?)null), stoppingToken);
+
+            if (claimedRows == 0)
+                continue;
+
+            var delivery = await dbContext.AlertDeliveries.FirstOrDefaultAsync(d => d.Id == deliveryId, stoppingToken);
+            if (delivery is null)
+                continue;
+
             var channel = deliveryChannels.FirstOrDefault(c => c.SupportedChannel.ToString() == delivery.Channel);
 
             if (channel == null)
@@ -84,14 +100,14 @@ public sealed class AlertDeliveryWorker : BackgroundService
                 {
                     delivery.RetryCount++;
                     delivery.Error = result.ErrorMessage;
-                    if (delivery.RetryCount >= 3) delivery.Status = DeliveryStatus.Failed;
+                    delivery.Status = delivery.RetryCount >= 3 ? DeliveryStatus.Failed : DeliveryStatus.Pending;
                 }
             }
             catch (Exception ex)
             {
                 delivery.RetryCount++;
                 delivery.Error = ex.Message;
-                if (delivery.RetryCount >= 3) delivery.Status = DeliveryStatus.Failed;
+                delivery.Status = delivery.RetryCount >= 3 ? DeliveryStatus.Failed : DeliveryStatus.Pending;
                 _logger.LogError(ex, "Failed to send alert delivery {DeliveryId}", delivery.Id);
             }
         }

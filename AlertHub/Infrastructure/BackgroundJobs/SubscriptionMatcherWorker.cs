@@ -1,6 +1,6 @@
 using System.Text;
 using System.Text.Json;
-using AlertHub.Application.Alerts.Matching;
+using AlertHub.Infrastructure.Alerts.Matching;
 using AlertHub.Infrastructure.Telemetry;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -61,8 +61,6 @@ public sealed class SubscriptionMatcherWorker : BackgroundService
 
             try
             {
-                // We don't know the exact type here easily because the outbox stores it as string
-                // But we know it contains an AlertId
                 using var doc = JsonDocument.Parse(message);
                 if (doc.RootElement.TryGetProperty("AlertId", out var alertIdProp))
                 {
@@ -71,9 +69,12 @@ public sealed class SubscriptionMatcherWorker : BackgroundService
                     using var scope = _serviceProvider.CreateScope();
                     var matcher = scope.ServiceProvider.GetRequiredService<AlertSubscriptionMatcher>();
                     await matcher.MatchAndScheduleAsync(alertId, stoppingToken);
+                    await channel.BasicAckAsync(ea.DeliveryTag, false, stoppingToken);
+                    return;
                 }
 
-                await channel.BasicAckAsync(ea.DeliveryTag, false, stoppingToken);
+                _logger.LogWarning("Rejected message without AlertId for subscription matching.");
+                await channel.BasicNackAsync(ea.DeliveryTag, false, false, stoppingToken);
             }
             catch (Exception ex)
             {

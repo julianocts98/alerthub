@@ -25,8 +25,9 @@ public sealed class TelegramDeliveryChannel : IAlertDeliveryChannel
     {
         if (_botClient == null)
         {
-            _logger.LogWarning("Telegram Bot Token is not configured. Simulating success.");
-            return new DeliveryResult(true, ExternalReference: "SIMULATED_" + Guid.NewGuid());
+            const string error = "Telegram Bot Token is not configured.";
+            _logger.LogWarning(error);
+            return new DeliveryResult(false, ErrorMessage: error);
         }
 
         try
@@ -45,4 +46,3 @@ public sealed class TelegramDeliveryChannel : IAlertDeliveryChannel
         }
     }
 }
-
