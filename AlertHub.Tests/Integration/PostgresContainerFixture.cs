@@ -1,4 +1,5 @@
 using Testcontainers.PostgreSql;
+using Testcontainers.RabbitMq;
 
 namespace AlertHub.Tests.Integration;
 
@@ -7,23 +8,30 @@ public sealed class PostgresCollection : ICollectionFixture<PostgresContainerFix
 
 public sealed class PostgresContainerFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:16")
+    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:16")
+        .Build();
+
+    private readonly RabbitMqContainer _rabbitContainer = new RabbitMqBuilder("rabbitmq:4.0-management")
+        .WithUsername("alerthub")
+        .WithPassword("alerthub")
         .Build();
 
     public AlertsApiFactory Factory { get; private set; } = default!;
 
-    public string ConnectionString => _container.GetConnectionString();
+    public string ConnectionString => _dbContainer.GetConnectionString();
+    public string RabbitHost => _rabbitContainer.Hostname;
+    public int RabbitPort => _rabbitContainer.GetMappedPublicPort(5672);
 
     public async Task InitializeAsync()
     {
-        await _container.StartAsync();
+        await Task.WhenAll(_dbContainer.StartAsync(), _rabbitContainer.StartAsync());
         Factory = new AlertsApiFactory(this);
         await Factory.InitializeDbAsync();
     }
 
     public async Task DisposeAsync()
     {
-        await Factory.DisposeAsync();
-        await _container.DisposeAsync();
+        if (Factory != null) await Factory.DisposeAsync();
+        await Task.WhenAll(_dbContainer.DisposeAsync().AsTask(), _rabbitContainer.DisposeAsync().AsTask());
     }
 }

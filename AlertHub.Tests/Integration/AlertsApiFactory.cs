@@ -25,6 +25,10 @@ public sealed class AlertsApiFactory : WebApplicationFactory<Program>
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = _fixture.ConnectionString,
+                ["RabbitMQ:HostName"] = _fixture.RabbitHost,
+                ["RabbitMQ:Port"] = _fixture.RabbitPort.ToString(),
+                ["BackgroundJobs:OutboxIntervalMs"] = "100",
+                ["BackgroundJobs:DeliveryIntervalMs"] = "100",
                 ["Jwt:Issuer"] = "AlertHub",
                 ["Jwt:Audience"] = "AlertHub",
                 ["Jwt:Key"] = "a_very_long_secret_key_for_development_purposes"
