@@ -58,6 +58,11 @@ public sealed class AppDbContext : DbContext, IUnitOfWork
         // Define shadow properties for all entities at once
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
+            if (typeof(AggregateRoot).IsAssignableFrom(entityType.ClrType))
+            {
+                modelBuilder.Entity(entityType.ClrType).Ignore(nameof(AggregateRoot.DomainEvents));
+            }
+
             modelBuilder.Entity(entityType.Name).Property<DateTimeOffset>("CreatedAt");
             modelBuilder.Entity(entityType.Name).Property<DateTimeOffset>("UpdatedAt");
         }

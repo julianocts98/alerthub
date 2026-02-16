@@ -30,6 +30,11 @@ public sealed class SubscriptionRepository : ISubscriptionRepository
                 .ToList()
         };
 
+        foreach (var @event in subscription.DomainEvents)
+        {
+            entity.AddDomainEvent(@event);
+        }
+
         _dbContext.Subscriptions.Add(entity);
     }
 

@@ -1,9 +1,10 @@
 using AlertHub.Domain.Alert;
 using AlertHub.Domain.Subscriptions;
+using AlertHub.Domain.Common;
 
 namespace AlertHub.Infrastructure.Persistence.Entities.Subscriptions;
 
-public sealed class SubscriptionEntity
+public sealed class SubscriptionEntity : AggregateRoot
 {
     public Guid Id { get; set; }
 

@@ -1,8 +1,9 @@
 using AlertHub.Domain.Alert;
+using AlertHub.Domain.Common;
 
 namespace AlertHub.Infrastructure.Persistence.Entities;
 
-public sealed class AlertEntity
+public sealed class AlertEntity : AggregateRoot
 {
     public Guid Id { get; set; }
 

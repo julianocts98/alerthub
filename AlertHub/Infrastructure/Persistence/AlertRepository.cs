@@ -53,6 +53,11 @@ public sealed class AlertRepository : IAlertRepository
             Infos = alert.Infos.Select(i => MapInfo(alert.Id, i)).ToList(),
         };
 
+        foreach (var @event in alert.DomainEvents)
+        {
+            entity.AddDomainEvent(@event);
+        }
+
         _dbContext.Alerts.Add(entity);
 
         return new AlertPersistenceResult(entity.Id, entity.IngestedAtUtc);

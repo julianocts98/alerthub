@@ -11,6 +11,11 @@ public abstract class AggregateRoot
         _domainEvents.Add(domainEvent);
     }
 
+    public void AddDomainEvent(IDomainEvent domainEvent)
+    {
+        _domainEvents.Add(domainEvent);
+    }
+
     public void ClearDomainEvents()
     {
         _domainEvents.Clear();
