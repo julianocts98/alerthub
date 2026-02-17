@@ -55,6 +55,6 @@ public sealed class CapXmlSchemaValidator : ICapXmlSchemaValidator
             return Result.Success();
 
         var joinedErrors = string.Join(" | ", errors);
-        return Result.Failure(new ResultError(IngestionErrorCodes.XmlSchemaInvalid, joinedErrors));
+        return Result.Failure(ResultError.BadRequest(IngestionErrorCodes.XmlSchemaInvalid, joinedErrors));
     }
 }

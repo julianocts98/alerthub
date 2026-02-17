@@ -34,26 +34,26 @@ public sealed class IdentityService
         if (string.IsNullOrWhiteSpace(configuredDemoKey))
         {
             return Result<IssuedToken>.Failure(
-                new ResultError(IdentityErrorCodes.IssuerKeyNotConfigured, "Identity issuer key is not configured."));
+                ResultError.NotFound(IdentityErrorCodes.IssuerKeyNotConfigured, "Identity issuer key is not configured."));
         }
 
         if (!string.Equals(configuredDemoKey, providedIssuerKey, StringComparison.Ordinal))
         {
             return Result<IssuedToken>.Failure(
-                new ResultError(IdentityErrorCodes.InvalidIssuerKey, "Issuer key is invalid."));
+                ResultError.Unauthorized(IdentityErrorCodes.InvalidIssuerKey, "Issuer key is invalid."));
         }
 
         if (!IsSupportedRole(command.Role))
         {
             return Result<IssuedToken>.Failure(
-                new ResultError(IdentityErrorCodes.InvalidRole, "Role is not supported."));
+                ResultError.Validation(IdentityErrorCodes.InvalidRole, "Role is not supported."));
         }
 
         var requestedScopes = command.Scopes ?? [];
         if (requestedScopes.Any(scope => !IsSupportedScope(scope)))
         {
             return Result<IssuedToken>.Failure(
-                new ResultError(IdentityErrorCodes.InvalidScope, "One or more scopes are not supported."));
+                ResultError.Validation(IdentityErrorCodes.InvalidScope, "One or more scopes are not supported."));
         }
 
         var claims = new List<Claim>

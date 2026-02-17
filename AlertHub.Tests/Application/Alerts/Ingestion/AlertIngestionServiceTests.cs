@@ -100,6 +100,6 @@ public class AlertIngestionServiceTests
     private sealed class FailSchemaValidator : ICapXmlSchemaValidator
     {
         public Result Validate(string rawXml) =>
-            Result.Failure(new ResultError(IngestionErrorCodes.XmlSchemaInvalid, "Schema validation failed."));
+            Result.Failure(ResultError.BadRequest(IngestionErrorCodes.XmlSchemaInvalid, "Schema validation failed."));
     }
 }

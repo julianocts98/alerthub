@@ -45,22 +45,24 @@ public static class ResultExtensions
                 "An unexpected error occurred.");
         }
 
-        var statusCode = error.Code switch
-        {
-            var c when c.EndsWith(".not_found") => StatusCodes.Status404NotFound,
-            var c when c.EndsWith(".unauthorized") => StatusCodes.Status401Unauthorized,
-            var c when c.EndsWith(".forbidden") => StatusCodes.Status403Forbidden,
-            var c when c.EndsWith(".conflict") => StatusCodes.Status409Conflict,
-            "ingestion.content_type.unsupported" => StatusCodes.Status415UnsupportedMediaType,
-            var c when c.StartsWith("alert.") => StatusCodes.Status422UnprocessableEntity,
-            var c when c.StartsWith("subscription.") => StatusCodes.Status422UnprocessableEntity,
-            _ => StatusCodes.Status400BadRequest
-        };
+        var statusCode = ResolveStatusCode(error.Kind);
 
         var title = GetTitleForStatus(statusCode);
 
         return ApiProblemDetails.Build(statusCode, title, error.Message);
     }
+
+    private static int ResolveStatusCode(ErrorKind kind) => kind switch
+    {
+        ErrorKind.Validation => StatusCodes.Status422UnprocessableEntity,
+        ErrorKind.NotFound => StatusCodes.Status404NotFound,
+        ErrorKind.Unauthorized => StatusCodes.Status401Unauthorized,
+        ErrorKind.Conflict => StatusCodes.Status409Conflict,
+        ErrorKind.BadRequest => StatusCodes.Status400BadRequest,
+        ErrorKind.UnsupportedMediaType => StatusCodes.Status415UnsupportedMediaType,
+        ErrorKind.Unexpected => StatusCodes.Status500InternalServerError,
+        _ => StatusCodes.Status500InternalServerError
+    };
 
     private static string GetTitleForStatus(int statusCode) => statusCode switch
     {

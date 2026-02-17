@@ -1,6 +1,26 @@
 namespace AlertHub.Application.Common;
 
-public sealed record ResultError(string Code, string Message);
+public enum ErrorKind
+{
+    Validation,
+    NotFound,
+    Unauthorized,
+    Conflict,
+    BadRequest,
+    UnsupportedMediaType,
+    Unexpected
+}
+
+public sealed record ResultError(string Code, string Message, ErrorKind Kind)
+{
+    public static ResultError Validation(string code, string message) => new(code, message, ErrorKind.Validation);
+    public static ResultError NotFound(string code, string message) => new(code, message, ErrorKind.NotFound);
+    public static ResultError Unauthorized(string code, string message) => new(code, message, ErrorKind.Unauthorized);
+    public static ResultError Conflict(string code, string message) => new(code, message, ErrorKind.Conflict);
+    public static ResultError BadRequest(string code, string message) => new(code, message, ErrorKind.BadRequest);
+    public static ResultError UnsupportedMediaType(string code, string message) => new(code, message, ErrorKind.UnsupportedMediaType);
+    public static ResultError Unexpected(string code, string message) => new(code, message, ErrorKind.Unexpected);
+}
 
 public class Result
 {

@@ -1,5 +1,4 @@
 using AlertHub.Application.Common;
-using AlertHub.Domain.Alert;
 using AlertHub.Domain.Common;
 using AlertHub.Domain.Subscriptions;
 
@@ -34,7 +33,7 @@ public sealed class SubscriptionService
         }
         catch (DomainException ex)
         {
-            return Result<SubscriptionResponse>.Failure(new ResultError(ex.Error.Code, ex.Error.Message));
+            return Result<SubscriptionResponse>.Failure(ResultError.Validation(ex.Error.Code, ex.Error.Message));
         }
     }
 
@@ -44,7 +43,7 @@ public sealed class SubscriptionService
         if (subscription is null)
         {
             return Result<SubscriptionResponse>.Failure(
-                new ResultError("subscription.not_found", $"Subscription with ID '{id}' was not found."));
+                ResultError.NotFound(SubscriptionErrorCodes.NotFound, $"Subscription with ID '{id}' was not found."));
         }
 
         return Result<SubscriptionResponse>.Success(MapToResponse(subscription));

@@ -21,7 +21,7 @@ public sealed class XmlCapAlertParser : ICapAlertParser
             if (transportRequest is null)
             {
                 return Result<AlertIngestionRequest>.Failure(
-                    new ResultError(IngestionErrorCodes.InvalidPayload, "Payload could not be parsed into a CAP alert request."));
+                    ResultError.BadRequest(IngestionErrorCodes.InvalidPayload, "Payload could not be parsed into a CAP alert request."));
             }
 
             var request = CapAlertTransportMapper.ToApplicationRequest(transportRequest);
@@ -30,7 +30,7 @@ public sealed class XmlCapAlertParser : ICapAlertParser
         catch (InvalidOperationException ex)
         {
             return Result<AlertIngestionRequest>.Failure(
-                new ResultError(IngestionErrorCodes.InvalidPayload, $"XML payload is invalid: {ex.Message}"));
+                ResultError.BadRequest(IngestionErrorCodes.InvalidPayload, $"XML payload is invalid: {ex.Message}"));
         }
     }
 

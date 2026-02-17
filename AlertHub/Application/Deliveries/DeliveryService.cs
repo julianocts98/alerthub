@@ -25,11 +25,11 @@ public sealed class DeliveryService
         {
             RetryDeliveryResult.Retried => Result.Success(),
             RetryDeliveryResult.NotFound => Result.Failure(
-                new ResultError("delivery.not_found", $"Delivery with ID '{id}' was not found.")),
+                ResultError.NotFound(DeliveryErrorCodes.NotFound, $"Delivery with ID '{id}' was not found.")),
             RetryDeliveryResult.NotFailed => Result.Failure(
-                new ResultError("delivery.invalid_state", "Only failed deliveries can be retried.")),
+                ResultError.Validation(DeliveryErrorCodes.InvalidState, "Only failed deliveries can be retried.")),
             _ => Result.Failure(
-                new ResultError("delivery.retry_failed", "An unexpected delivery retry error occurred."))
+                ResultError.Unexpected(DeliveryErrorCodes.RetryFailed, "An unexpected delivery retry error occurred."))
         };
     }
 }

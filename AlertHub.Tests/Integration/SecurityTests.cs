@@ -85,6 +85,6 @@ public sealed class SecurityTests : IClassFixture<PostgresContainerFixture>
         request.Headers.Add("X-Demo-Issuer-Key", "change-this-demo-issuer-key");
 
         var response = await _client.SendAsync(request);
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
 }

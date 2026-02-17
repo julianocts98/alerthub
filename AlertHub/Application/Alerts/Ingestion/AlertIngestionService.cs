@@ -32,7 +32,7 @@ public sealed class AlertIngestionService
         if (parser is null)
         {
             return Result<AlertIngestionResponse>.Failure(
-                new ResultError(IngestionErrorCodes.UnsupportedContentType, $"Unsupported media type '{contentType}'."));
+                ResultError.UnsupportedMediaType(IngestionErrorCodes.UnsupportedContentType, $"Unsupported media type '{contentType}'."));
         }
 
         if (IsXml(contentType))
@@ -40,21 +40,21 @@ public sealed class AlertIngestionService
             var schemaValidation = _xmlSchemaValidator.Validate(rawPayload);
             if (!schemaValidation.IsSuccess)
                 return Result<AlertIngestionResponse>.Failure(
-                    schemaValidation.Error ?? new ResultError(IngestionErrorCodes.XmlSchemaInvalid, "XML schema validation failed."));
+                    schemaValidation.Error ?? ResultError.BadRequest(IngestionErrorCodes.XmlSchemaInvalid, "XML schema validation failed."));
         }
 
         var parseResult = parser.Parse(rawPayload);
         if (!parseResult.IsSuccess || parseResult.Value is null)
         {
             return Result<AlertIngestionResponse>.Failure(
-                parseResult.Error ?? new ResultError(IngestionErrorCodes.InvalidPayload, "Payload could not be parsed."));
+                parseResult.Error ?? ResultError.BadRequest(IngestionErrorCodes.InvalidPayload, "Payload could not be parsed."));
         }
 
         var domainResult = await _alertFactory.CreateAsync(parseResult.Value, ct);
         if (!domainResult.IsSuccess || domainResult.Value is null)
         {
             return Result<AlertIngestionResponse>.Failure(
-                domainResult.Error ?? new ResultError(IngestionErrorCodes.InvalidPayload, "Alert could not be validated."));
+                domainResult.Error ?? ResultError.BadRequest(IngestionErrorCodes.InvalidPayload, "Alert could not be validated."));
         }
 
         // Idempotency check: natural key is (Sender, Identifier)

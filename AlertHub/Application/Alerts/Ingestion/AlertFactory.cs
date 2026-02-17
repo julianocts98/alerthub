@@ -107,7 +107,7 @@ public sealed class AlertFactory
         }
         catch (DomainException ex)
         {
-            var error = new ResultError(ex.Error.Code, ex.Error.Message);
+            var error = ResultError.Validation(ex.Error.Code, ex.Error.Message);
             return Task.FromResult(Result<DomainAlert>.Failure(error));
         }
     }
