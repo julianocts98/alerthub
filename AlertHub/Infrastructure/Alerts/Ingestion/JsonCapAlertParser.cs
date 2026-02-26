@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using AlertHub.Application.Alerts.Ingestion;
-using AlertHub.Application.Common;
+using AlertHub.Domain.Common;
 using AlertHub.Infrastructure.Alerts.Ingestion.Transport;
 
 namespace AlertHub.Infrastructure.Alerts.Ingestion;

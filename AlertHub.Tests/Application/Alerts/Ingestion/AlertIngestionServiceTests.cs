@@ -1,6 +1,6 @@
 using AlertHub.Application.Alerts;
 using AlertHub.Application.Alerts.Ingestion;
-using AlertHub.Application.Common;
+using AlertHub.Domain.Common;
 using AlertHub.Infrastructure.Alerts.Ingestion;
 using Moq;
 

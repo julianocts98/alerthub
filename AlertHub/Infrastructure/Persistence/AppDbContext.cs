@@ -1,5 +1,4 @@
 using System.Text.Json;
-using AlertHub.Application.Common;
 using AlertHub.Domain.Common;
 using AlertHub.Infrastructure.Persistence.Entities;
 using AlertHub.Infrastructure.Persistence.Entities.Deliveries;

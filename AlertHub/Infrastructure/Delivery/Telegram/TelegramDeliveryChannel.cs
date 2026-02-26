@@ -1,4 +1,4 @@
-using AlertHub.Application.Common.Delivery;
+using AlertHub.Domain.Common.Delivery;
 using AlertHub.Domain.Subscriptions;
 using Telegram.Bot;
 

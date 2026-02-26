@@ -1,5 +1,5 @@
 using AlertHub.Api.Common;
-using AlertHub.Application.Common.Security;
+using AlertHub.Domain.Common.Security;
 using AlertHub.Application.Subscriptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

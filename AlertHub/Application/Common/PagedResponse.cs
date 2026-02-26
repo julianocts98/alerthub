@@ -1,4 +1,4 @@
-namespace AlertHub.Application.Common;
+namespace AlertHub.Domain.Common;
 
 /// <summary>
 /// Base class for cursor-paginated responses.

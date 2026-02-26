@@ -1,4 +1,4 @@
-using AlertHub.Application.Common;
+using AlertHub.Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AlertHub.Api.Common;

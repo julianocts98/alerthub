@@ -1,4 +1,4 @@
-namespace AlertHub.Application.Common.Messaging;
+namespace AlertHub.Domain.Common.Messaging;
 
 public interface IIntegrationEvent
 {

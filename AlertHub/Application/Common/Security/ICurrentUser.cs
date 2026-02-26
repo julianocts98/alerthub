@@ -1,4 +1,4 @@
-namespace AlertHub.Application.Common.Security;
+namespace AlertHub.Domain.Common.Security;
 
 public interface ICurrentUser
 {

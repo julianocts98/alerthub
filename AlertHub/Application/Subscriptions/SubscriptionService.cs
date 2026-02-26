@@ -1,4 +1,3 @@
-using AlertHub.Application.Common;
 using AlertHub.Domain.Common;
 using AlertHub.Domain.Subscriptions;
 
@@ -17,24 +16,24 @@ public sealed class SubscriptionService
 
     public async Task<Result<SubscriptionResponse>> CreateSubscriptionAsync(CreateSubscriptionRequest request, string userId, CancellationToken ct)
     {
-        try
+        var subscriptionResult = Subscription.Create(
+            userId,
+            request.Channel,
+            request.Target,
+            request.MinSeverity,
+            request.Categories);
+            
+        if (!subscriptionResult.IsSuccess)
         {
-            var subscription = Subscription.Create(
-                userId,
-                request.Channel,
-                request.Target,
-                request.MinSeverity,
-                request.Categories);
-
-            await _repository.AddAsync(subscription, ct);
-            await _unitOfWork.SaveChangesAsync(ct);
-
-            return Result<SubscriptionResponse>.Success(MapToResponse(subscription));
+            return Result<SubscriptionResponse>.Failure(subscriptionResult.Error!);
         }
-        catch (DomainException ex)
-        {
-            return Result<SubscriptionResponse>.Failure(ResultError.Validation(ex.Error.Code, ex.Error.Message));
-        }
+
+        var subscription = subscriptionResult.Value!;
+
+        await _repository.AddAsync(subscription, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
+
+        return Result<SubscriptionResponse>.Success(MapToResponse(subscription));
     }
 
     public async Task<Result<SubscriptionResponse>> GetByIdAsync(Guid id, CancellationToken ct)

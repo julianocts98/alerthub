@@ -1,8 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using AlertHub.Application.Common;
-using AlertHub.Application.Common.Security;
+using AlertHub.Domain.Common;
+using AlertHub.Domain.Common.Security;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AlertHub.Application.Identity;

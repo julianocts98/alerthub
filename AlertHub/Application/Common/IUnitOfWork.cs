@@ -1,4 +1,4 @@
-namespace AlertHub.Application.Common;
+namespace AlertHub.Domain.Common;
 
 public interface IUnitOfWork
 {

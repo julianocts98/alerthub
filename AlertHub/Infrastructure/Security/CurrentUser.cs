@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using AlertHub.Application.Common.Security;
+using AlertHub.Domain.Common.Security;
 
 namespace AlertHub.Infrastructure.Security;
 

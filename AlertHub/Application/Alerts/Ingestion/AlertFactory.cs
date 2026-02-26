@@ -1,4 +1,3 @@
-using AlertHub.Application.Common;
 using AlertHub.Domain.Common;
 using DomainAlert = AlertHub.Domain.Alert.Alert;
 

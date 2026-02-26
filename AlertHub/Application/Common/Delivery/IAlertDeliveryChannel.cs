@@ -1,6 +1,6 @@
 using AlertHub.Domain.Subscriptions;
 
-namespace AlertHub.Application.Common.Delivery;
+namespace AlertHub.Domain.Common.Delivery;
 
 public record DeliveryRequest(
     string Target,

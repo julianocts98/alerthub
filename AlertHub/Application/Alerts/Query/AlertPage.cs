@@ -1,4 +1,4 @@
-using AlertHub.Application.Common;
+using AlertHub.Domain.Common;
 
 namespace AlertHub.Application.Alerts.Query;
 

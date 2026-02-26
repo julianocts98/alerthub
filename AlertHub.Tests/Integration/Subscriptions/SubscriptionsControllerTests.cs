@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using AlertHub.Application.Common.Security;
+using AlertHub.Domain.Common.Security;
 using AlertHub.Application.Subscriptions;
 using AlertHub.Domain.Alert;
 using AlertHub.Domain.Subscriptions;

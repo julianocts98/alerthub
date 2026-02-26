@@ -49,7 +49,7 @@ public sealed class Subscription : AggregateRoot
         _categories.AddRange(categories);
     }
 
-    public static Subscription Create(
+    public static Result<Subscription> Create(
         string userId,
         SubscriptionChannel channel,
         string target,
@@ -57,17 +57,17 @@ public sealed class Subscription : AggregateRoot
         IEnumerable<AlertInfoCategory>? categories = null)
     {
         if (string.IsNullOrWhiteSpace(userId))
-            throw new DomainException(new DomainError("subscription.user_id.required", "User ID is required."));
+            return Result<Subscription>.Failure(ResultError.Validation("subscription.user_id.required", "User ID is required."));
 
         if (string.IsNullOrWhiteSpace(target))
-            throw new DomainException(new DomainError("subscription.target.required", "Target is required."));
+            return Result<Subscription>.Failure(ResultError.Validation("subscription.target.required", "Target is required."));
 
         // Basic validation for target based on channel
         if (channel == SubscriptionChannel.Sms && !IsValidPhoneNumber(target))
-            throw new DomainException(new DomainError("subscription.target.invalid_sms", "Invalid phone number for SMS channel."));
+            return Result<Subscription>.Failure(ResultError.Validation("subscription.target.invalid_sms", "Invalid phone number for SMS channel."));
 
         if (channel == SubscriptionChannel.Email && !IsValidEmail(target))
-            throw new DomainException(new DomainError("subscription.target.invalid_email", "Invalid email address for Email channel."));
+            return Result<Subscription>.Failure(ResultError.Validation("subscription.target.invalid_email", "Invalid email address for Email channel."));
 
         var subscription = new Subscription(Guid.NewGuid(), userId, channel, target, true);
 
@@ -75,7 +75,7 @@ public sealed class Subscription : AggregateRoot
 
         subscription.RaiseDomainEvent(new SubscriptionCreatedDomainEvent(subscription.Id, subscription.UserId, subscription.Target));
 
-        return subscription;
+        return Result<Subscription>.Success(subscription);
     }
 
     public void UpdateFilter(AlertSeverity? minSeverity, IEnumerable<AlertInfoCategory>? categories)

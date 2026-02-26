@@ -1,4 +1,4 @@
-using AlertHub.Application.Common.Delivery;
+using AlertHub.Domain.Common.Delivery;
 using AlertHub.Infrastructure.Persistence;
 using AlertHub.Infrastructure.Persistence.Entities.Deliveries;
 using AlertHub.Infrastructure.Telemetry;

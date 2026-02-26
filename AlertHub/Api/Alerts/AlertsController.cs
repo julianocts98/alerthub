@@ -1,7 +1,7 @@
 using AlertHub.Api.Common;
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Alerts.Query;
-using AlertHub.Application.Common.Security;
+using AlertHub.Domain.Common.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
