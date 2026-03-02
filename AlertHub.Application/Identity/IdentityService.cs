@@ -19,7 +19,7 @@ public sealed record IssueTokenCommand(string UserId, string Role, string[]? Sco
 
 public sealed record IssuedToken(string Value);
 
-public sealed class IdentityService
+public sealed class IdentityService : IIdentityService
 {
     private readonly IConfiguration _configuration;
 

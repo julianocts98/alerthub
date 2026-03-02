@@ -13,10 +13,10 @@ namespace AlertHub.Api.Alerts;
 [Authorize]
 public sealed class AlertsController : ControllerBase
 {
-    private readonly AlertIngestionService _ingestService;
-    private readonly AlertQueryService _queryService;
+    private readonly IAlertIngestionService _ingestService;
+    private readonly IAlertQueryService _queryService;
 
-    public AlertsController(AlertIngestionService ingestService, AlertQueryService queryService)
+    public AlertsController(IAlertIngestionService ingestService, IAlertQueryService queryService)
     {
         _ingestService = ingestService;
         _queryService = queryService;

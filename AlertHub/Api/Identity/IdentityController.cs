@@ -9,9 +9,9 @@ namespace AlertHub.Api.Identity;
 public sealed class IdentityController : ControllerBase
 {
     private const string DemoIssuerHeaderName = "X-Demo-Issuer-Key";
-    private readonly IdentityService _identityService;
+    private readonly IIdentityService _identityService;
 
-    public IdentityController(IdentityService identityService)
+    public IdentityController(IIdentityService identityService)
     {
         _identityService = identityService;
     }

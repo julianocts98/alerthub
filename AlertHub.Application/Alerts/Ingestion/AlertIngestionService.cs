@@ -2,7 +2,7 @@ using AlertHub.Domain.Common;
 
 namespace AlertHub.Application.Alerts.Ingestion;
 
-public sealed class AlertIngestionService
+public sealed class AlertIngestionService : IAlertIngestionService
 {
     private readonly IReadOnlyCollection<ICapAlertParser> _parsers;
     private readonly ICapXmlSchemaValidator _xmlSchemaValidator;

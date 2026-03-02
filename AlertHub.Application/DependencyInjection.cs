@@ -11,11 +11,11 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<AlertFactory>();
-        services.AddScoped<AlertIngestionService>();
-        services.AddScoped<AlertQueryService>();
-        services.AddScoped<DeliveryService>();
-        services.AddScoped<SubscriptionService>();
-        services.AddScoped<IdentityService>();
+        services.AddScoped<IAlertIngestionService, AlertIngestionService>();
+        services.AddScoped<IAlertQueryService, AlertQueryService>();
+        services.AddScoped<IDeliveryService, DeliveryService>();
+        services.AddScoped<ISubscriptionService, SubscriptionService>();
+        services.AddScoped<IIdentityService, IdentityService>();
 
         return services;
     }

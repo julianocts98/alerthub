@@ -3,7 +3,7 @@ using AlertHub.Domain.Subscriptions;
 
 namespace AlertHub.Application.Subscriptions;
 
-public sealed class SubscriptionService
+public sealed class SubscriptionService : ISubscriptionService
 {
     private readonly ISubscriptionRepository _repository;
     private readonly IUnitOfWork _unitOfWork;

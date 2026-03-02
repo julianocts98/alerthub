@@ -2,7 +2,7 @@ using AlertHub.Domain.Common;
 
 namespace AlertHub.Application.Deliveries;
 
-public sealed class DeliveryService
+public sealed class DeliveryService : IDeliveryService
 {
     private const int MaxLimit = 200;
     private readonly IDeliveryRepository _repository;

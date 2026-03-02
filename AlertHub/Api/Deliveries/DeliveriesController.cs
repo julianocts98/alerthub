@@ -11,9 +11,9 @@ namespace AlertHub.Api.Deliveries;
 [Authorize(Roles = Roles.Admin)]
 public sealed class DeliveriesController : ControllerBase
 {
-    private readonly DeliveryService _deliveryService;
+    private readonly IDeliveryService _deliveryService;
 
-    public DeliveriesController(DeliveryService deliveryService)
+    public DeliveriesController(IDeliveryService deliveryService)
     {
         _deliveryService = deliveryService;
     }

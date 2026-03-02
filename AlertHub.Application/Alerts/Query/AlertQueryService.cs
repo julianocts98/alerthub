@@ -1,6 +1,6 @@
 namespace AlertHub.Application.Alerts.Query;
 
-public sealed class AlertQueryService
+public sealed class AlertQueryService : IAlertQueryService
 {
     private readonly IAlertRepository _alertRepository;
 

@@ -11,10 +11,10 @@ namespace AlertHub.Api.Subscriptions;
 [Authorize]
 public sealed class SubscriptionsController : ControllerBase
 {
-    private readonly SubscriptionService _subscriptionService;
+    private readonly ISubscriptionService _subscriptionService;
     private readonly ICurrentUser _currentUser;
 
-    public SubscriptionsController(SubscriptionService subscriptionService, ICurrentUser currentUser)
+    public SubscriptionsController(ISubscriptionService subscriptionService, ICurrentUser currentUser)
     {
         _subscriptionService = subscriptionService;
         _currentUser = currentUser;
