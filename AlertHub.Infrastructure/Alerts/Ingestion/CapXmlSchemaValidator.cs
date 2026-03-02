@@ -8,15 +8,21 @@ namespace AlertHub.Infrastructure.Alerts.Ingestion;
 public sealed class CapXmlSchemaValidator : ICapXmlSchemaValidator
 {
     private const string CapNamespace = "urn:oasis:names:tc:emergency:cap:1.2";
-    private const string SchemaRelativePath = "Infrastructure/Alerts/Ingestion/Schemas/cap1_2.xsd";
+    private const string SchemaResourceName = "AlertHub.Infrastructure.Alerts.Ingestion.Schemas.cap1_2.xsd";
 
     private readonly XmlSchemaSet _schemas;
 
-    public CapXmlSchemaValidator(IHostEnvironment environment)
+    public CapXmlSchemaValidator()
     {
-        var schemaPath = Path.Combine(environment.ContentRootPath, SchemaRelativePath);
+        using var schemaStream = typeof(CapXmlSchemaValidator).Assembly.GetManifestResourceStream(SchemaResourceName);
+        if (schemaStream is null)
+        {
+            throw new InvalidOperationException($"Embedded CAP schema resource '{SchemaResourceName}' was not found.");
+        }
+
+        using var schemaReader = XmlReader.Create(schemaStream);
         _schemas = new XmlSchemaSet();
-        _schemas.Add(CapNamespace, schemaPath);
+        _schemas.Add(CapNamespace, schemaReader);
     }
 
     public Result Validate(string rawXml)

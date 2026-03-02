@@ -1,6 +1,4 @@
 using AlertHub.Infrastructure.Alerts.Ingestion;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 
 namespace AlertHub.Tests.Infrastructure.Alerts.Ingestion;
 
@@ -9,12 +7,7 @@ public sealed class CapXmlSchemaValidatorTests
     [Fact]
     public void Validate_XmlResourceWithoutMimeType_ShouldPass()
     {
-        var environment = new TestHostEnvironment
-        {
-            ContentRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "AlertHub"))
-        };
-
-        var sut = new CapXmlSchemaValidator(environment);
+        var sut = new CapXmlSchemaValidator();
 
         const string xml =
             """
@@ -42,13 +35,5 @@ public sealed class CapXmlSchemaValidatorTests
         var result = sut.Validate(xml);
 
         Assert.True(result.IsSuccess);
-    }
-
-    private sealed class TestHostEnvironment : IHostEnvironment
-    {
-        public string EnvironmentName { get; set; } = Environments.Development;
-        public string ApplicationName { get; set; } = "AlertHub.Tests";
-        public string ContentRootPath { get; set; } = string.Empty;
-        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 }

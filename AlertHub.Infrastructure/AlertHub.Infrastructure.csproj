@@ -29,9 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Alerts/Ingestion/Schemas/cap1_2.xsd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <EmbeddedResource Include="Alerts/Ingestion/Schemas/cap1_2.xsd" />
   </ItemGroup>
 
 </Project>
