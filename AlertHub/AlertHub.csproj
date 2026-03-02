@@ -26,6 +26,11 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\AlertHub.Application\AlertHub.Application.csproj" />
+      <ProjectReference Include="..\AlertHub.Infrastructure\AlertHub.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
       <Folder Include="Api\" />
       <Folder Include="Infrastructure\" />
       <Folder Include="Application\" />   
