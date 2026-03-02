@@ -5,6 +5,9 @@ WORKDIR /src
 
 COPY AlertHub.sln ./
 COPY AlertHub/AlertHub.csproj AlertHub/
+COPY AlertHub.Domain/AlertHub.Domain.csproj AlertHub.Domain/
+COPY AlertHub.Application/AlertHub.Application.csproj AlertHub.Application/
+COPY AlertHub.Infrastructure/AlertHub.Infrastructure.csproj AlertHub.Infrastructure/
 COPY AlertHub.Tests/AlertHub.Tests.csproj AlertHub.Tests/
 RUN dotnet restore AlertHub.sln
 

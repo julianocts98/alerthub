@@ -3,7 +3,7 @@
 AlertHub is a demo ASP.NET Core Web API for ingesting CAP (Common Alerting Protocol) alerts, storing them, matching them to user subscriptions, and executing asynchronous deliveries.
 
 The project is intentionally designed to exercise modern .NET backend concerns in a compact codebase:
-- layered architecture (`Domain`, `Application`, `Infrastructure`, `Api`)
+- layered architecture with dedicated projects (`AlertHub.Domain`, `AlertHub.Application`, `AlertHub.Infrastructure`, `AlertHub`)
 - JWT auth + role/scope authorization
 - EF Core + PostgreSQL persistence
 - RabbitMQ + background workers
@@ -21,6 +21,12 @@ At a high level, the system processes alerts in this sequence:
 7. `AlertDeliveryWorker` claims pending deliveries and sends through configured channels (Telegram in this demo).
 
 ## Architecture overview
+
+Solution projects:
+- `AlertHub.Domain`: domain model, invariants, domain events/errors
+- `AlertHub.Application`: use cases and ports/contracts
+- `AlertHub.Infrastructure`: adapters (EF Core, RabbitMQ, Telegram, security, workers)
+- `AlertHub`: API controllers and composition root (`Program.cs`)
 
 ### Domain
 Contains business concepts and invariants:
@@ -79,7 +85,7 @@ This starts:
 From repository root:
 
 ```bash
-dotnet ef database update --project AlertHub --startup-project AlertHub
+dotnet ef database update --project AlertHub.Infrastructure --startup-project AlertHub
 ```
 
 If `dotnet ef` is not installed:
@@ -123,7 +129,7 @@ docker compose up -d postgres rabbitmq
 ### 3. Run database migrations (once per schema change)
 
 ```bash
-dotnet ef database update --project AlertHub --startup-project AlertHub
+dotnet ef database update --project AlertHub.Infrastructure --startup-project AlertHub
 ```
 
 ### 4. Run the API container
@@ -253,4 +259,4 @@ Security integration checks include:
 ## Standards reference
 
 - CAP 1.2 standard (OASIS): https://docs.oasis-open.org/emergency/cap/v1.2/CAP-v1.2-os.html
-- The XSD used by this project for XML validation (`AlertHub/Infrastructure/Alerts/Ingestion/Schemas/cap1_2.xsd`) was sourced from the CAP 1.2 specification resources above.
+- The XSD used by this project for XML validation (`AlertHub.Infrastructure/Alerts/Ingestion/Schemas/cap1_2.xsd`) was sourced from the CAP 1.2 specification resources above.
