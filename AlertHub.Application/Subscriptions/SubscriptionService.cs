@@ -6,11 +6,16 @@ namespace AlertHub.Application.Subscriptions;
 public sealed class SubscriptionService : ISubscriptionService
 {
     private readonly ISubscriptionRepository _repository;
+    private readonly ISubscriptionQueries _queries;
     private readonly IUnitOfWork _unitOfWork;
 
-    public SubscriptionService(ISubscriptionRepository repository, IUnitOfWork unitOfWork)
+    public SubscriptionService(
+        ISubscriptionRepository repository,
+        ISubscriptionQueries queries,
+        IUnitOfWork unitOfWork)
     {
         _repository = repository;
+        _queries = queries;
         _unitOfWork = unitOfWork;
     }
 
@@ -38,14 +43,14 @@ public sealed class SubscriptionService : ISubscriptionService
 
     public async Task<Result<SubscriptionResponse>> GetByIdAsync(Guid id, CancellationToken ct)
     {
-        var subscription = await _repository.GetByIdAsync(id, ct);
+        var subscription = await _queries.GetByIdAsync(id, ct);
         if (subscription is null)
         {
             return Result<SubscriptionResponse>.Failure(
                 ResultError.NotFound(SubscriptionErrorCodes.NotFound, $"Subscription with ID '{id}' was not found."));
         }
 
-        return Result<SubscriptionResponse>.Success(MapToResponse(subscription));
+        return Result<SubscriptionResponse>.Success(subscription);
     }
 
     private static SubscriptionResponse MapToResponse(Subscription s) =>

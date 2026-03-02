@@ -45,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<IAlertRepository, AlertRepository>();
         services.AddScoped<IDeliveryRepository, DeliveryRepository>();
         services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+        services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
 
         services.AddScoped<ICapAlertParser, JsonCapAlertParser>();
         services.AddScoped<ICapAlertParser, XmlCapAlertParser>();
