@@ -1,6 +1,7 @@
 using AlertHub.Application.Alerts;
 using AlertHub.Application.Alerts.Ingestion;
 using AlertHub.Application.Deliveries;
+using AlertHub.Application.Identity;
 using AlertHub.Application.Subscriptions;
 using AlertHub.Domain.Common;
 using AlertHub.Domain.Common.Delivery;
@@ -24,6 +25,8 @@ public static class DependencyInjection
     {
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddSingleton<IIdentityTokenGenerator, JwtIdentityTokenGenerator>();
+        services.AddSingleton<IIdentityIssuerKeyProvider, ConfigurationIdentityIssuerKeyProvider>();
 
         services.AddScoped<AlertSubscriptionMatcher>();
         services.AddScoped<IAlertDeliveryChannel, TelegramDeliveryChannel>();

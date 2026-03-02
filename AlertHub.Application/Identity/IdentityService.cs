@@ -1,9 +1,5 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using AlertHub.Domain.Common;
 using AlertHub.Domain.Common.Security;
-using Microsoft.IdentityModel.Tokens;
 
 namespace AlertHub.Application.Identity;
 
@@ -21,16 +17,18 @@ public sealed record IssuedToken(string Value);
 
 public sealed class IdentityService : IIdentityService
 {
-    private readonly IConfiguration _configuration;
+    private readonly IIdentityIssuerKeyProvider _issuerKeyProvider;
+    private readonly IIdentityTokenGenerator _tokenGenerator;
 
-    public IdentityService(IConfiguration configuration)
+    public IdentityService(IIdentityIssuerKeyProvider issuerKeyProvider, IIdentityTokenGenerator tokenGenerator)
     {
-        _configuration = configuration;
+        _issuerKeyProvider = issuerKeyProvider;
+        _tokenGenerator = tokenGenerator;
     }
 
     public Result<IssuedToken> IssueToken(IssueTokenCommand command, string? providedIssuerKey)
     {
-        var configuredDemoKey = _configuration["Identity:IssuerApiKey"];
+        var configuredDemoKey = _issuerKeyProvider.GetIssuerKey();
         if (string.IsNullOrWhiteSpace(configuredDemoKey))
         {
             return Result<IssuedToken>.Failure(
@@ -56,41 +54,13 @@ public sealed class IdentityService : IIdentityService
                 ResultError.Validation(IdentityErrorCodes.InvalidScope, "One or more scopes are not supported."));
         }
 
-        var claims = new List<Claim>
-        {
-            new(JwtRegisteredClaimNames.Sub, command.UserId),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Role, command.Role)
-        };
+        var token = _tokenGenerator.GenerateToken(
+            command.UserId,
+            command.Role,
+            requestedScopes,
+            DateTimeOffset.UtcNow.AddHours(2));
 
-        foreach (var scope in requestedScopes)
-            claims.Add(new Claim("scope", scope));
-
-        var jwtIssuer = RequireSetting("Jwt:Issuer");
-        var jwtAudience = RequireSetting("Jwt:Audience");
-        var jwtKey = RequireSetting("Jwt:Key");
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(
-            issuer: jwtIssuer,
-            audience: jwtAudience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(2),
-            signingCredentials: creds
-        );
-
-        return Result<IssuedToken>.Success(new IssuedToken(new JwtSecurityTokenHandler().WriteToken(token)));
-    }
-
-    private string RequireSetting(string key)
-    {
-        var value = _configuration[key];
-        if (!string.IsNullOrWhiteSpace(value))
-            return value;
-
-        throw new InvalidOperationException($"Missing required configuration value '{key}'.");
+        return Result<IssuedToken>.Success(new IssuedToken(token));
     }
 
     private static bool IsSupportedRole(string role)
